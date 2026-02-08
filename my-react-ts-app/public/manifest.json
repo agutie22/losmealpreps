@@ -1,0 +1,16 @@
+{
+    "name": "Los Meal Preps",
+    "short_name": "Los Meal Preps",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "description": "Premium meal prep delivery service.",
+    "icons": [
+        {
+            "src": "vite.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

@@ -1,0 +1,120 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 3rem;
+    /* Slightly reduced padding */
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-nav);
+}
+
+.navbar-brand {
+    font-family: var(--font-family-heading);
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    /* Tighter tracking for modern look */
+    color: var(--color-primary);
+    /* Deep Blue */
+    text-transform: none;
+    /* Remove Uppercase for approachable feel */
+    display: flex;
+    align-items: center;
+}
+
+
+.navbar-links a {
+    margin-left: 2rem;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-family: var(--font-family-base);
+    /* Switch to base font for clean look */
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: none;
+    /* Remove uppercase */
+    letter-spacing: 0;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.navbar-links a:hover,
+.navbar-links a.active {
+    color: var(--color-primary);
+    /* Blue hover */
+    text-shadow: none;
+}
+
+.cart-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: relative;
+    margin-left: 1rem;
+    transition: transform 0.2s;
+}
+
+.cart-btn:hover {
+    transform: scale(1.1);
+}
+
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+.navbar-links a::after {
+    display: none;
+    /* Remove underline animation for cleaner look */
+}
+
+.navbar-links a:hover::after {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 1rem 1.5rem;
+    }
+
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+
+    .navbar-brand span {
+        font-size: 1.5rem;
+    }
+
+    .navbar-links {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .navbar-links a {
+        display: none;
+        /* Hide text links on mobile, use Mobile Footer */
+    }
+
+    .cart-btn {
+        margin-left: 0.5rem;
+        font-size: 1.25rem;
+    }
+}

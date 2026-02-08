@@ -1,0 +1,624 @@
+.customize-page {
+    /* Uses global page-container but adding specific padding */
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 90%;
+}
+
+/* Goal Selection */
+.goal-selection {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+    .goal-selection {
+        grid-template-columns: 1fr;
+    }
+}
+
+.goal-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background-color: white;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.goal-btn:hover {
+    border-color: var(--color-secondary);
+    transform: translateY(-2px);
+}
+
+.goal-btn.active {
+    border-color: var(--color-primary);
+    background-color: #f0fdf4;
+    /* Very light green hint */
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.goal-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.goal-text {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    margin-bottom: 0.25rem;
+}
+
+.goal-btn small {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+/* Advanced Toggle */
+.advanced-toggle-container {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.text-link {
+    background: none;
+    border: none;
+    color: var(--color-secondary);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.advanced-section {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.customize-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-top: 2rem;
+}
+
+.customize-header h1 {
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.customize-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+    .customize-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+.control-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.control-section h3 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: var(--color-primary);
+}
+
+/* Portion Toggle */
+.portion-toggle {
+    display: flex;
+    background-color: #f3f4f6;
+    padding: 4px;
+    border-radius: 8px;
+    gap: 4px;
+}
+
+.portion-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--color-text-muted);
+}
+
+.portion-btn.active {
+    background-color: white;
+    color: var(--color-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.portion-btn small {
+    display: block;
+    font-weight: 400;
+    font-size: 0.8rem;
+}
+
+/* Dietary */
+.dietary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary);
+}
+
+.allergy-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.text-input {
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.control-group {
+    margin-bottom: 2rem;
+}
+
+.control-group label {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--color-text);
+}
+
+.percentage-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: white;
+}
+
+.percentage-badge.protein {
+    background-color: var(--color-protein);
+}
+
+.percentage-badge.carbs {
+    background-color: var(--color-carbs);
+}
+
+.percentage-badge.fats {
+    background-color: var(--color-fats);
+}
+
+.slider-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.macro-slider {
+    flex-grow: 1;
+    height: 6px;
+    border-radius: 3px;
+    appearance: none;
+    background: #e5e7eb;
+    outline: none;
+}
+
+.macro-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.protein-slider::-webkit-slider-thumb {
+    background: var(--color-protein);
+}
+
+.carbs-slider::-webkit-slider-thumb {
+    background: var(--color-carbs);
+}
+
+.fats-slider::-webkit-slider-thumb {
+    background: var(--color-fats);
+}
+
+.macro-input {
+    width: 70px;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.total-calories {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: var(--color-surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.calorie-display {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-primary);
+}
+
+/* Visualizer */
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+}
+
+.visualizer-circle {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.inner-circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.inner-circle span {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1;
+}
+
+.inner-circle small {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    margin-top: 5px;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.dot.protein {
+    background-color: var(--color-protein);
+}
+
+.dot.carbs {
+    background-color: var(--color-carbs);
+}
+
+.dot.fats {
+    background-color: var(--color-fats);
+}
+
+/* MEAL BUILDER STYLES */
+.meal-builder-section {
+    margin-bottom: 4rem;
+}
+
+.builder-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+    .builder-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.builder-step {
+    margin-bottom: 2.5rem;
+}
+
+.builder-step h3 {
+    font-size: 1.25rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price-tag {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-weight: normal;
+    background-color: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.ingredient-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.ingredient-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: white;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    min-height: 80px;
+}
+
+.ingredient-btn:hover {
+    border-color: var(--color-secondary);
+    transform: translateY(-2px);
+}
+
+.ingredient-btn.active {
+    border-color: var(--color-primary);
+    background-color: #eff6ff;
+    /* Very light blue */
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.ing-name {
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.ing-price {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.portion-toggle-builder {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.portion-toggle-builder label {
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.toggle-group {
+    display: flex;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.toggle-group button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--color-text-muted);
+}
+
+.toggle-group button.active {
+    background-color: white;
+    color: var(--color-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Builder Summary */
+.builder-summary {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    position: sticky;
+    top: 100px;
+    border: 1px solid var(--color-border);
+}
+
+.builder-summary h3 {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-primary);
+}
+
+.summary-details p {
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.summary-total {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 1.25rem;
+    font-weight: 800;
+    display: flex;
+    justify-content: space-between;
+    color: var(--color-primary);
+}
+
+.policies-text {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    background-color: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.policies-text h4 {
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+}
+
+.policies-text ul {
+    padding-left: 1.25rem;
+}
+
+.policies-text li {
+    margin-bottom: 0.25rem;
+}
+
+.divider-section {
+    text-align: center;
+    margin: 4rem 0;
+    color: var(--color-text-muted);
+}
+
+.divider-section h2 {
+    font-size: 1.5rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.5rem;
+}
+
+/* Premium Proteins */
+.premium-section-header {
+    font-family: 'Montserrat', sans-serif;
+    /* Assuming brand font */
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #3f220f;
+    /* Dark brown from screenshot */
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.premium-section-header span {
+    display: block;
+    font-size: 1.5rem;
+}
+
+.ingredient-grid.premium-grid {
+    margin-bottom: 2rem;
+}
+
+.ingredient-btn.premium {
+    background-color: #bfa065;
+    /* Gold/Brownish color from screenshot background */
+    border-color: #8c6b38;
+    color: #3f220f;
+}
+
+.ingredient-btn.premium:hover {
+    background-color: #a88b52;
+    transform: translateY(-2px);
+}
+
+.ingredient-btn.premium .ing-name {
+    color: #3f220f;
+    font-weight: 900;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+}
+
+.ingredient-btn.premium .ing-price {
+    color: #3f220f;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.ingredient-btn.premium.active {
+    background-color: #3f220f;
+    color: #bfa065;
+    border-color: #3f220f;
+}
+
+.ingredient-btn.premium.active .ing-name,
+.ingredient-btn.premium.active .ing-price {
+    color: #bfa065;
+}

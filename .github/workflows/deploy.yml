@@ -1,0 +1,45 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: './my-react-ts-app/pnpm-lock.yaml'
+
+      - name: Install dependencies
+        run: |
+          cd my-react-ts-app
+          pnpm install --frozen-lockfile
+
+      - name: Build
+        run: |
+          cd my-react-ts-app
+          pnpm build
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: my-react-ts-app/dist
+          branch: gh-pages

@@ -1,0 +1,54 @@
+.macro-visualizer {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-xs);
+}
+
+.macro-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.macro-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.shape {
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    /* Deep shadow */
+}
+
+.protein.square {
+    background-color: var(--color-primary);
+    /* Neon Red */
+    border: 1px solid rgba(255, 61, 0, 0.3);
+    box-shadow: 0 0 8px rgba(255, 61, 0, 0.4);
+    /* Glow */
+}
+
+.carbs.circle {
+    background-color: var(--color-secondary);
+    /* Neon Green */
+    border: 1px solid rgba(118, 255, 3, 0.3);
+    box-shadow: 0 0 8px rgba(118, 255, 3, 0.4);
+    /* Glow */
+}
+
+.fat.triangle {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-color: transparent transparent #FFAB00 transparent;
+    /* Amber */
+    background-color: transparent;
+    filter: drop-shadow(0 0 4px rgba(255, 171, 0, 0.4));
+}

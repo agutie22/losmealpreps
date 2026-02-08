@@ -1,0 +1,125 @@
+.instruction-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.instruction-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 340px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: bounce 0.6s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.instruction-modal-content h2 {
+    color: var(--color-text-dark, #1f2937);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.instruction-steps {
+    margin: 1.5rem 0;
+    color: var(--color-text-light, #6b7280);
+}
+
+.instruction-steps b {
+    color: var(--color-primary, #4f46e5);
+    font-size: 1.2rem;
+}
+
+.sub-text {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.modal-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.modal-btn.primary {
+    background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    color: white;
+    border: none;
+}
+
+.modal-btn.primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.modal-btn.secondary {
+    background: transparent;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+.modal-btn.secondary:hover {
+    background: #f9fafb;
+    color: #374151;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0% {
+        transform: scale(0.8);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
