@@ -26,20 +26,18 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
-          cache-dependency-path: './my-react-ts-app/pnpm-lock.yaml'
+          cache-dependency-path: './pnpm-lock.yaml'
 
       - name: Install dependencies
         run: |
-          cd my-react-ts-app
           pnpm install --frozen-lockfile
 
       - name: Build
         run: |
-          cd my-react-ts-app
           pnpm build
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: my-react-ts-app/dist
+          folder: dist
           branch: gh-pages
