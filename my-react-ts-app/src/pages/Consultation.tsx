@@ -30,10 +30,7 @@ const Consultation = () => {
         setLocalPrefs(dietaryPreferences);
     }, [macroGoals, dietaryPreferences]);
 
-    const calculatePercentage = (val: number, type: 'protein' | 'carbs' | 'fats') => {
-        const calsFromMacro = type === 'fats' ? val * 9 : val * 4;
-        return Math.round((calsFromMacro / localGoals.calories) * 100) || 0;
-    }
+
 
     const handleChange = (field: keyof typeof macroGoals, value: number) => {
         const updated = { ...localGoals, [field]: value };
@@ -41,9 +38,7 @@ const Consultation = () => {
         setLocalGoals(updated);
     };
 
-    const handlePrefChange = (field: keyof typeof dietaryPreferences, value: any) => {
-        setLocalPrefs(prev => ({ ...prev, [field]: value }));
-    };
+
 
     const toggleRestriction = (restriction: string) => {
         setLocalPrefs(prev => {
