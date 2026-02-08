@@ -2,6 +2,8 @@ import './Home.css';
 import Button from '../components/Button';
 import { useNavigate } from 'react-router-dom';
 
+import chefMascot from '../assets/chef_mascot.png';
+
 export default function Home() {
     // Removed: const [meals] = useState(initialMeals);
     const navigate = useNavigate();
@@ -22,7 +24,7 @@ export default function Home() {
                     </div>
                     <div className="hero-image-wrapper">
                         <img
-                            src="/src/assets/chef_mascot.png"
+                            src={chefMascot}
                             alt="Our Head Chef"
                             className="hero-image"
                             onError={(e) => {

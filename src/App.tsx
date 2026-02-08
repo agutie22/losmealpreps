@@ -14,7 +14,7 @@ function App() {
   return (
     <UserProvider>
       <CartProvider>
-        <Router>
+        <Router basename={import.meta.env.BASE_URL}>
           <Navbar />
           <CartDrawer />
           <div className="content">
