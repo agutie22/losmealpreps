@@ -1,8 +1,10 @@
 import './Home.css';
 import Button from '../components/Button';
 import { useNavigate } from 'react-router-dom';
+import BibleQuote from '../components/BibleQuote';
 
 import chefMascot from '../assets/chef_mascot.png';
+import BundleDeal from '../components/BundleDeal';
 
 export default function Home() {
     // Removed: const [meals] = useState(initialMeals);
@@ -18,10 +20,18 @@ export default function Home() {
                             Fully customizable bowls tailored to your macros.
                             <strong>Fresh ingredients, precise portions, delivered.</strong>
                         </p>
+
+                        <BibleQuote
+                            verse="So whether you eat or drink or whatever you do, do it all for the glory of God."
+                            reference="1 Corinthians 10:31"
+                            className="hero-quote"
+                        />
+
                         <div className="hero-actions">
                             <Button size="lg" onClick={() => navigate('/customize')}>Start Building</Button>
                         </div>
                     </div>
+                    {/* ... keep hero image ... */}
                     <div className="hero-image-wrapper">
                         <img
                             src={chefMascot}
@@ -36,17 +46,55 @@ export default function Home() {
                 </div>
             </header>
 
+            <section className="section-container" style={{ paddingBottom: 0 }}>
+                <BundleDeal />
+            </section>
+
             <main className="main-content">
+                {/* Mission Section */}
+                <section className="section-container">
+                    <BibleQuote
+                        verse="Dear friend, I pray that you may enjoy good health and that all may go well with you, even as your soul is getting along well."
+                        reference="3 John 1:2"
+                        description="Our Prayer For You"
+                    />
+                </section>
+
                 <section className="section-container bg-surface">
                     <div className="cta-split">
+                        {/* ... keep rest of content ... */}
                         <div className="cta-content">
                             <h2>How It Works</h2>
-                            <p>
-                                1. <strong>Choose Your Base</strong>: White Rice, Red Potatoes, or None.<br />
-                                2. <strong>Pick Your Protein</strong>: Steak, Chicken, Shrimp, Salmon, or Ground Beef.<br />
-                                3. <strong>Add Veggies</strong>: Mixed Vegetables or None.<br />
-                                4. <strong>We Cook & Deliver</strong>: Freshly prepared meals right to your door.
-                            </p>
+                            <div className="how-it-works-steps">
+                                <div className="step-item">
+                                    <span className="step-number">1</span>
+                                    <div className="step-text">
+                                        <strong>Pick Your Protein</strong>
+                                        <p>Steak, Chicken, Shrimp, Salmon, or Ground Beef.</p>
+                                    </div>
+                                </div>
+                                <div className="step-item">
+                                    <span className="step-number">2</span>
+                                    <div className="step-text">
+                                        <strong>Select Your Carbs</strong>
+                                        <p>Jasmine Rice, Red Potatoes, or Skip for low carb.</p>
+                                    </div>
+                                </div>
+                                <div className="step-item">
+                                    <span className="step-number">3</span>
+                                    <div className="step-text">
+                                        <strong>Add Veggies</strong>
+                                        <p>Fresh Mixed Vegetables or None.</p>
+                                    </div>
+                                </div>
+                                <div className="step-item">
+                                    <span className="step-number">4</span>
+                                    <div className="step-text">
+                                        <strong>We Cook & Deliver</strong>
+                                        <p>Chef-prepared meals delivered right to your door.</p>
+                                    </div>
+                                </div>
+                            </div>
                             <Button variant="secondary" onClick={() => navigate('/customize')}>Create Your Bowl</Button>
                         </div>
                         <div className="cta-visual">

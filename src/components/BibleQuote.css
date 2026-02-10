@@ -1,0 +1,52 @@
+.bible-quote-container {
+    text-align: center;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: var(--font-family-heading);
+    /* Montserrat for clean look, or switch to serif */
+}
+
+.bible-quote-text {
+    font-family: var(--font-family-accent);
+    /* Dancing Script */
+    font-size: 1.75rem;
+    color: var(--color-primary);
+    margin: 0 0 1rem 0;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.bible-quote-reference {
+    display: block;
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-style: normal;
+}
+
+.quote-description {
+    font-size: 0.9rem;
+    color: var(--color-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+/* Light theme for dark backgrounds */
+.bible-quote-container.light-theme .bible-quote-text {
+    color: var(--color-surface);
+}
+
+.bible-quote-container.light-theme .bible-quote-reference {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+    .bible-quote-text {
+        font-size: 1.4rem;
+    }
+}

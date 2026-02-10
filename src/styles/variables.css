@@ -1,24 +1,25 @@
 :root {
-    /* Brand Colors - Pacific Factor (Light/Clean) */
-    --color-background: #F8FAFC;
-    /* Light Gray/White Background */
+    /* Brand Colors - Steakhouse (Warm/Rich) */
+    --color-background: #FDFBF7;
+    /* Warm White/Eggshell */
     --color-surface: #FFFFFF;
     /* Pure White Cards */
-    --color-surface-hover: #F1F5F9;
+    --color-surface-hover: #EFEBE9;
+    /* Light Brown/Beige Hover */
 
-    --color-primary: #0D47A1;
-    /* Pacific Deep Blue (Factor-like Blue) */
-    --color-secondary: #00E5FF;
-    /* Pacific Cyan (Accents) */
-    --color-tertiary: #FF5722;
-    /* Camaron Orange (Call to Action) */
+    --color-primary: #5D4037;
+    /* Rich Steakhouse Brown */
+    --color-secondary: #8D6E63;
+    /* Lighter Leather Brown */
+    --color-tertiary: #BF360C;
+    /* Seared Red/Burnt Orange */
 
-    --color-text: #1F2937;
-    /* Dark Gray Text (High Contrast) */
-    --color-text-muted: #6B7280;
-    /* Medium Gray */
-    --color-border: #E2E8F0;
-    /* Light Border */
+    --color-text: #3E2723;
+    /* Espresso / Dark Brown Text */
+    --color-text-muted: #795548;
+    /* Medium Brown */
+    --color-border: #D7CCC8;
+    /* Pale Brown Border */
 
     /* Typography */
     --font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
@@ -42,19 +43,19 @@
     --radius-full: 9999px;
 
     /* Effects */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-nav: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 1px 2px 0 rgba(62, 39, 35, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(62, 39, 35, 0.1), 0 2px 4px -1px rgba(62, 39, 35, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(62, 39, 35, 0.1), 0 4px 6px -2px rgba(62, 39, 35, 0.05);
+    --shadow-nav: 0 1px 3px 0 rgba(62, 39, 35, 0.1);
 
-    --glass-bg: rgba(255, 255, 255, 0.9);
-    /* Opaque white glass */
+    --glass-bg: rgba(253, 251, 247, 0.9);
+    /* Opaque warm glass */
     --glass-border: 1px solid var(--color-border);
     --backdrop-blur: blur(8px);
 
-    --gradient-ocean: linear-gradient(135deg, #0D47A1 0%, #01579B 100%);
-    /* Deep Blue Gradient */
-    --gradient-marisco: linear-gradient(45deg, #FF5722, #FF8A65);
+    --gradient-ocean: linear-gradient(135deg, #5D4037 0%, #3E2723 100%);
+    /* Deep Brown Gradient */
+    --gradient-marisco: linear-gradient(45deg, #BF360C, #D84315);
 }
 
 body {

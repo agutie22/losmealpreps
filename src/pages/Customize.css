@@ -622,3 +622,283 @@
 .ingredient-btn.premium.active .ing-price {
     color: #bfa065;
 }
+
+/* Wizard Styles */
+.wizard-progress-container {
+    max-width: 800px;
+    margin: 0 auto 3rem auto;
+    position: relative;
+    padding: 0 1rem;
+}
+
+.wizard-steps {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.wizard-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.wizard-step.completed,
+.wizard-step.current {
+    opacity: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.wizard-step.completed .step-circle {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.wizard-step.current .step-circle {
+    background-color: white;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(93, 64, 55, 0.1);
+}
+
+.step-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.wizard-step.current .step-label {
+    color: var(--color-primary);
+}
+
+.wizard-line {
+    flex-grow: 1;
+    height: 2px;
+    background-color: var(--color-border);
+    margin: 0 10px;
+    margin-bottom: 25px;
+    /* Adjust based on circle + gap */
+    position: relative;
+    z-index: 1;
+}
+
+.wizard-line.completed {
+    background-color: var(--color-primary);
+}
+
+
+/* Wizard Content Layout */
+.wizard-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 3rem;
+}
+
+@media (max-width: 900px) {
+    .wizard-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wizard-main {
+    min-height: 500px;
+}
+
+.step-description {
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+/* Navigation Buttons */
+.wizard-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.nav-btn {
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.nav-btn.prev {
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+}
+
+.nav-btn.prev:hover {
+    border-color: var(--color-text);
+    color: var(--color-text);
+}
+
+.nav-btn.next {
+    background-color: var(--color-primary);
+    color: white;
+    margin-left: auto;
+    /* Push to right if only next exists */
+}
+
+.nav-btn.next:hover {
+    background-color: #4E342E;
+    /* slightly darker primary */
+    transform: translateX(4px);
+}
+
+.add-plan-btn {
+    width: 100%;
+}
+
+/* Review Step Styles */
+.review-summary-card {
+    background-color: white;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.review-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-label {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    width: 120px;
+}
+
+.review-value {
+    flex-grow: 1;
+    font-size: 1.1rem;
+    color: var(--color-text);
+}
+
+.edit-step-btn {
+    background: none;
+    border: none;
+    color: var(--color-secondary);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.review-macros {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    justify-content: center;
+}
+
+.macro-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    color: white;
+    min-width: 80px;
+}
+
+.macro-pill .macro-val {
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+.macro-pill .macro-lbl {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.macro-pill.protein {
+    background-color: var(--color-protein, #D84315);
+}
+
+.macro-pill.carbs {
+    background-color: var(--color-carbs, #F9A825);
+}
+
+.macro-pill.fats {
+    background-color: var(--color-fats, #8D6E63);
+}
+
+.macro-pill.calories {
+    background-color: var(--color-text, #3E2723);
+}
+
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.limit-text {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.sticky-sidebar {
+    position: sticky;
+    top: 2rem;
+}
+
+.mb-2rem {
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+    .wizard-steps {
+        overflow-x: auto;
+        padding-bottom: 1rem;
+    }
+
+    .review-macros {
+        flex-wrap: wrap;
+    }
+
+    .macro-pill {
+        flex: 1;
+    }
+}

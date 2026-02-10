@@ -1,0 +1,90 @@
+.global-footer {
+    background-color: var(--color-primary);
+    color: #EFEBE9;
+    padding: 3rem 1.5rem 6rem;
+    /* Extra bottom padding for mobile nav */
+    margin-top: auto;
+    text-align: center;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.footer-brand h3 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-family-heading);
+    display: none;
+    /* Hide text if using logo */
+}
+
+.footer-logo {
+    height: 120px;
+    /* Increased size */
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 1rem;
+    filter: brightness(0) invert(1);
+    /* Make logo white if it's black */
+}
+
+.footer-tagline {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.footer-links a {
+    color: #EFEBE9;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: var(--color-tertiary);
+}
+
+.footer-scripture {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+}
+
+.footer-scripture p {
+    font-family: var(--font-family-accent);
+    font-size: 1.25rem;
+    color: #EFEBE9;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.footer-copyright {
+    font-size: 0.8rem;
+    opacity: 0.6;
+}
+
+@media (min-width: 768px) {
+    .global-footer {
+        padding-bottom: 3rem;
+        /* Normal padding on desktop */
+    }
+
+    .footer-content {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+}

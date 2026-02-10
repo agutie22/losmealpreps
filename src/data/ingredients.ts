@@ -24,18 +24,18 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p1',
         name: 'Cowboy Butter Tri Tip Steak',
-        price: 16,
-        priceLarge: 19,
+        price: 14,
+        priceLarge: 17,
         category: 'protein',
-        isPremium: true,
+        // isPremium removed - moved to Regular
         macros: { protein: 36, fat: 15, calories: 291, carbs: 0 },
         macrosLarge: { protein: 48, fat: 21, calories: 389, carbs: 0 }
     },
     {
         id: 'p_ribeye',
         name: 'Ribeye Steak',
-        price: 18,
-        priceLarge: 22,
+        price: 16,
+        priceLarge: 20,
         category: 'protein',
         isPremium: true,
         macros: { protein: 46, fat: 20, calories: 380, carbs: 0 },
@@ -44,8 +44,8 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p_shrimp',
         name: 'Garlic Butter Shrimp',
-        price: 16,
-        priceLarge: 19,
+        price: 14,
+        priceLarge: 17,
         category: 'protein',
         isPremium: true,
         macros: { protein: 35, fat: 3, calories: 180, carbs: 0 },
@@ -54,8 +54,8 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p_salmon',
         name: 'Honey Glazed Salmon',
-        price: 17,
-        priceLarge: 21,
+        price: 15,
+        priceLarge: 19,
         category: 'protein',
         isPremium: true,
         macros: { protein: 32, fat: 17, calories: 295, carbs: 5 }, // Honey glaze adds carbs
@@ -64,8 +64,8 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p2',
         name: 'Chipotle Style Chicken Breast',
-        price: 13,
-        priceLarge: 16,
+        price: 11,
+        priceLarge: 14,
         category: 'protein',
         macros: { protein: 37, fat: 4, calories: 195, carbs: 0 },
         macrosLarge: { protein: 50, fat: 6, calories: 260, carbs: 0 }
@@ -73,8 +73,8 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p3',
         name: 'Marinated Chicken Thigh',
-        price: 10,
-        priceLarge: 13,
+        price: 8,
+        priceLarge: 11,
         category: 'protein',
         macros: { protein: 33, fat: 7, calories: 210, carbs: 0 },
         macrosLarge: { protein: 44, fat: 9, calories: 280, carbs: 0 }
@@ -82,8 +82,8 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p4',
         name: 'Seasoned Ground Beef',
-        price: 15,
-        priceLarge: 18,
+        price: 13,
+        priceLarge: 16,
         category: 'protein',
         macros: { protein: 46, fat: 16, calories: 340, carbs: 0 },
         macrosLarge: { protein: 61, fat: 21, calories: 453, carbs: 0 }
@@ -91,8 +91,8 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p5',
         name: 'Serrano Ground Turkey',
-        price: 13,
-        priceLarge: 16,
+        price: 11,
+        priceLarge: 14,
         category: 'protein',
         macros: { protein: 38, fat: 15, calories: 309, carbs: 0 },
         macrosLarge: { protein: 51, fat: 19, calories: 412, carbs: 0 }
@@ -127,7 +127,7 @@ export const VEGGIES: Ingredient[] = [
     {
         id: 'v1',
         name: 'Mixed Vegetables',
-        price: 1,
+        price: 0,
         category: 'veggie',
         macros: { protein: 2, carbs: 5, fat: 0, calories: 30 } // Estimated
     },

@@ -8,7 +8,7 @@
     "description": "Premium meal prep delivery service.",
     "icons": [
         {
-            "src": "vite.svg",
+            "src": "logo-transparent.png",
             "sizes": "any",
             "type": "image/svg+xml"
         }

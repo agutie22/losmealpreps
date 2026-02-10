@@ -10,6 +10,8 @@ import CartDrawer from './components/CartDrawer';
 import MobileFooter from './components/MobileFooter';
 import './App.css';
 
+import Footer from './components/Footer';
+
 function App() {
   return (
     <UserProvider>
@@ -25,6 +27,7 @@ function App() {
               <Route path="/plan" element={<Plan />} />
             </Routes>
           </div>
+          <Footer />
           <MobileFooter />
         </Router>
       </CartProvider>

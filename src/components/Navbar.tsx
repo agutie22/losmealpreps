@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import logo from '../assets/logo-transparent.png';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -8,7 +9,7 @@ const Navbar = () => {
     return (
         <nav className="navbar">
             <div className="navbar-brand">
-                Los Meal Preps
+                <img src={logo} alt="Los Meal Preps" className="navbar-logo" />
             </div>
             <div className="navbar-links">
                 <Link to="/">Home</Link>
