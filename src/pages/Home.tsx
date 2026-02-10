@@ -47,7 +47,10 @@ export default function Home() {
             </header>
 
             <section className="section-container" style={{ paddingBottom: 0 }}>
-                <BundleDeal />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
+                    <BundleDeal variant="standard" />
+                    <BundleDeal variant="premium" />
+                </div>
             </section>
 
             <main className="main-content">

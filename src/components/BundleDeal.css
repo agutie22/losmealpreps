@@ -148,3 +148,35 @@
         padding: 1.5rem;
     }
 }
+
+/* Premium Variant */
+.bundle-deal-card.premium {
+    background-color: #3E2723;
+    /* Dark Brown */
+    color: #B08D55;
+    /* Gold */
+    border-color: #B08D55;
+}
+
+.bundle-deal-card.premium::before {
+    border-color: rgba(176, 141, 85, 0.3);
+}
+
+.bundle-deal-card.premium .bundle-title {
+    color: #B08D55;
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+}
+
+.bundle-deal-card.premium .bundle-subtitle::before,
+.bundle-deal-card.premium .bundle-subtitle::after {
+    background-color: #B08D55;
+}
+
+.bundle-deal-card.premium .bundle-price {
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.bundle-deal-card.premium .bundle-disclaimer {
+    color: #d7ccc8;
+}

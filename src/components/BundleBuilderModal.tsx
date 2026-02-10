@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Button from './Button';
 import { PROTEINS, type Macronutrients } from '../data/ingredients';
 import './BundleBuilderModal.css';
@@ -7,24 +7,29 @@ interface BundleBuilderModalProps {
     isOpen: boolean;
     onClose: () => void;
     onAddToCart: (description: string, selections: Record<string, number>, macros: Macronutrients) => void;
+    allowedProteinIds: string[];
 }
-
-// Allowed proteins for the bundle (IDs from ingredients.ts)
-const ALLOWED_PROTEIN_IDS = ['p2', 'p3', 'p5'];
-
-// Filter proteins to get the bundle options
-const bundleProteins = PROTEINS.filter(p => ALLOWED_PROTEIN_IDS.includes(p.id));
 
 const TARGET_COUNT = 10;
 
-const BundleBuilderModal: React.FC<BundleBuilderModalProps> = ({ isOpen, onClose, onAddToCart }) => {
+const BundleBuilderModal: React.FC<BundleBuilderModalProps> = ({ isOpen, onClose, onAddToCart, allowedProteinIds }) => {
 
-    // Initialize selections with 0 for each allowed protein
-    const [selections, setSelections] = useState<Record<string, number>>(() => {
-        const initialStates: Record<string, number> = {};
-        bundleProteins.forEach(p => initialStates[p.id] = 0);
-        return initialStates;
-    });
+    // Filter proteins to get the bundle options based on props
+    const currentBundleProteins = useMemo(() => {
+        return PROTEINS.filter(p => allowedProteinIds.includes(p.id));
+    }, [allowedProteinIds]);
+
+    // Initialize selections
+    const [selections, setSelections] = useState<Record<string, number>>({});
+
+    // Reset/Initialize state when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            const initialStates: Record<string, number> = {};
+            currentBundleProteins.forEach(p => initialStates[p.id] = 0);
+            setSelections(initialStates);
+        }
+    }, [isOpen, currentBundleProteins]);
 
     const totalSelected = useMemo(() => {
         return Object.values(selections).reduce((sum, count) => sum + count, 0);
@@ -34,13 +39,13 @@ const BundleBuilderModal: React.FC<BundleBuilderModalProps> = ({ isOpen, onClose
         if (totalSelected < TARGET_COUNT) {
             setSelections(prev => ({
                 ...prev,
-                [id]: prev[id] + 1
+                [id]: (prev[id] || 0) + 1
             }));
         }
     };
 
     const handleDecrement = (id: string) => {
-        if (selections[id] > 0) {
+        if ((selections[id] || 0) > 0) {
             setSelections(prev => ({
                 ...prev,
                 [id]: prev[id] - 1
@@ -55,8 +60,8 @@ const BundleBuilderModal: React.FC<BundleBuilderModalProps> = ({ isOpen, onClose
         const descriptionParts: string[] = [];
         const totalMacros: Macronutrients = { protein: 0, carbs: 0, fat: 0, calories: 0 };
 
-        bundleProteins.forEach(p => {
-            const count = selections[p.id];
+        currentBundleProteins.forEach(p => {
+            const count = selections[p.id] || 0;
             if (count > 0) {
                 descriptionParts.push(`${count}x ${p.name}`);
 
@@ -71,10 +76,7 @@ const BundleBuilderModal: React.FC<BundleBuilderModalProps> = ({ isOpen, onClose
         const description = `10 Meals (6oz): ${descriptionParts.join(', ')}`;
         onAddToCart(description, selections, totalMacros);
 
-        // Reset selections
-        const resetStates: Record<string, number> = {};
-        bundleProteins.forEach(p => resetStates[p.id] = 0);
-        setSelections(resetStates);
+        // Reset handled by useEffect on next open
     };
 
     if (!isOpen) return null;
@@ -106,7 +108,7 @@ const BundleBuilderModal: React.FC<BundleBuilderModalProps> = ({ isOpen, onClose
                 </div>
 
                 <div className="protein-selection-list">
-                    {bundleProteins.map(protein => (
+                    {currentBundleProteins.map(protein => (
                         <div
                             key={protein.id}
                             className={`protein-item ${selections[protein.id] > 0 ? 'active' : ''}`}
@@ -116,11 +118,11 @@ const BundleBuilderModal: React.FC<BundleBuilderModalProps> = ({ isOpen, onClose
                                 <button
                                     className="qty-btn minus"
                                     onClick={() => handleDecrement(protein.id)}
-                                    disabled={selections[protein.id] === 0}
+                                    disabled={!selections[protein.id]}
                                 >
                                     -
                                 </button>
-                                <span className="qty-value">{selections[protein.id]}</span>
+                                <span className="qty-value">{selections[protein.id] || 0}</span>
                                 <button
                                     className="qty-btn plus"
                                     onClick={() => handleIncrement(protein.id)}
@@ -152,7 +154,8 @@ const BundleBuilderModal: React.FC<BundleBuilderModalProps> = ({ isOpen, onClose
                             cursor: totalSelected === TARGET_COUNT ? 'pointer' : 'not-allowed'
                         }}
                     >
-                        Add Bundle - $115
+                        {/* Dynamic price would be better here, but I can hardcode or pass it in later if needed */}
+                        Add Bundle
                     </Button>
                 </div>
             </div>
