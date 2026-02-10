@@ -39,33 +39,70 @@ const CartDrawer: React.FC = () => {
                         color: isFirstTimeCustomer ? '#0D47A1' : '#E65100',
                         padding: '1rem',
                         fontSize: '0.9rem',
-                        borderRadius: '8px',
+                        borderRadius: '12px',
                         marginBottom: '1rem',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        border: `1px solid ${isFirstTimeCustomer ? '#BBDEFB' : '#FFE0B2'}`
                     }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                            {isFirstTimeCustomer ? '🎉 First-Time Customer' : '👤 Returning Customer'}
-                        </div>
-                        {isFirstTimeCustomer ? (
-                            <span>No minimums! Try your first meal today.</span>
-                        ) : (
-                            <span>Standard terms: 5 meals or $60 minimum.</span>
-                        )}
-                        <div style={{ marginTop: '0.5rem' }}>
+                        <div style={{
+                            display: 'flex',
+                            marginBottom: '1rem',
+                            background: 'rgba(255,255,255,0.5)',
+                            padding: '4px',
+                            borderRadius: '8px',
+                            gap: '4px'
+                        }}>
                             <button
-                                onClick={toggleCustomerStatus}
+                                onClick={() => !isFirstTimeCustomer && toggleCustomerStatus()}
                                 style={{
-                                    textDecoration: 'underline',
-                                    background: 'none',
+                                    flex: 1,
+                                    padding: '8px 4px',
+                                    borderRadius: '6px',
                                     border: 'none',
+                                    background: isFirstTimeCustomer ? 'white' : 'transparent',
+                                    boxShadow: isFirstTimeCustomer ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+                                    color: isFirstTimeCustomer ? '#0D47A1' : 'inherit',
+                                    fontWeight: isFirstTimeCustomer ? 'bold' : 'normal',
                                     cursor: 'pointer',
-                                    fontSize: '0.8rem',
-                                    color: 'inherit',
-                                    opacity: 0.8
-                                }}
-                            >
-                                (Switch mode for Demo)
+                                    transition: 'all 0.2s ease'
+                                }}>
+                                New Customer
                             </button>
+                            <button
+                                onClick={() => isFirstTimeCustomer && toggleCustomerStatus()}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 4px',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    background: !isFirstTimeCustomer ? 'white' : 'transparent',
+                                    boxShadow: !isFirstTimeCustomer ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+                                    color: !isFirstTimeCustomer ? '#E65100' : 'inherit',
+                                    fontWeight: !isFirstTimeCustomer ? 'bold' : 'normal',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}>
+                                Returning
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                            <span style={{ fontSize: '1.2rem' }}>
+                                {isFirstTimeCustomer ? '🎉' : '📝'}
+                            </span>
+                            <div>
+                                {isFirstTimeCustomer ? (
+                                    <>
+                                        <strong>No minimums!</strong>
+                                        <div style={{ marginTop: '2px', opacity: 0.9 }}>Try your first meal today. We trust you'll love it!</div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <strong>Standard Order Policy</strong>
+                                        <div style={{ marginTop: '2px', opacity: 0.9 }}>5 meals minimum OR $60 cart total.</div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 

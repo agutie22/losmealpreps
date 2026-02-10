@@ -3,7 +3,7 @@
     inset: 0;
     /* Modern shorthand for top/left/right/bottom: 0 */
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    z-index: 2000;
     display: flex;
     justify-content: flex-end;
     animation: fadeIn 0.3s;
@@ -12,8 +12,8 @@
 .cart-drawer {
     width: 100%;
     max-width: 400px;
-    height: 100%;
-    /* Try standard 100% first, relying on fixed overlay to handle viewport */
+    height: 100dvh;
+    /* Use dynamic viewport height for mobile browsers */
     background-color: white;
     display: flex;
     flex-direction: column;
@@ -74,9 +74,9 @@
     padding: 1.5rem;
     border-top: 1px solid var(--color-border);
     background-color: white;
-    z-index: 10;
-    /* Ensure safe area for iPhone home bar */
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    z-index: 20;
+    /* Ensure safe area for iPhone home bar + extra for visual clearance */
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 20px));
     text-align: center;
 }
 
