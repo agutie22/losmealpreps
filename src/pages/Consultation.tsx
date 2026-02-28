@@ -20,7 +20,7 @@ const Consultation = () => {
         notes: ''
     });
 
-    const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+    const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
     // Goal Presets
     const [selectedGoal, setSelectedGoal] = useState<'weight-loss' | 'muscle-gain' | 'maintain' | 'custom'>('maintain');
@@ -100,11 +100,8 @@ const Consultation = () => {
         if (success) {
             setFormStatus('success');
         } else {
-            // In a real app handle error, for demo maybe just success or alert
             console.error("Failed to submit form");
-            // Optional: setFormStatus('error');
-            // But let's keep it positive for the demo unless it's a hard failure
-            setFormStatus('success'); // Fallback to success for demo flow if key is missing/invalid but code runs
+            setFormStatus('error');
         }
     };
 
@@ -114,10 +111,9 @@ const Consultation = () => {
                 <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✅</div>
                 <h1>Request Received!</h1>
                 <p>Thank you, {formData.name}. We'll review your goals and get back to you within 24 hours with a personalized meal plan proposal.</p>
-                <div style={{ marginTop: '1rem', color: '#666', fontSize: '0.9rem' }}>
-                    (Demo Mode: Check console for "email" details if no real email was sent)
+                <div style={{ marginTop: '2rem' }}>
+                    <Button onClick={() => window.location.href = '/'}>Return Home</Button>
                 </div>
-                <Button onClick={() => window.location.href = '/'}>Return Home</Button>
             </div>
         );
     }
@@ -303,6 +299,12 @@ const Consultation = () => {
                 >
                     {formStatus === 'submitting' ? 'Sending Request...' : 'Request Consultation'}
                 </Button>
+
+                {formStatus === 'error' && (
+                    <div style={{ color: 'var(--color-error, #ff4444)', marginTop: '1rem', textAlign: 'center' }}>
+                        Failed to send request. Please check your connection or try again later.
+                    </div>
+                )}
 
             </form>
         </div>

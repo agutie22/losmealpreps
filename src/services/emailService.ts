@@ -23,16 +23,7 @@ export const sendConsultationRequest = async (data: ConsultationData): Promise<b
 
     // Check if keys are configured
     if (!serviceId || !templateId || !publicKey) {
-        console.warn('EmailJS keys are missing in .env. Falling back to demo mode.');
-        console.log('--- MOCK EMAIL SEND ---');
-        console.log('To:', 'Head Chef');
-        console.log('From:', data.email);
-        console.log('Data:', data);
-        console.log('-----------------------');
-
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        return true;
+        throw new Error('EmailJS configuration is missing. Please check your .env file.');
     }
 
     try {
