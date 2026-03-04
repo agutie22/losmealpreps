@@ -3,13 +3,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.25rem 3rem;
-    /* Slightly reduced padding */
-    background-color: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
+    background-color: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border-bottom: var(--glass-border);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: var(--shadow-nav);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
 }
 
 .navbar-brand {
@@ -31,21 +33,21 @@
     text-decoration: none;
     color: var(--color-text-muted);
     font-family: var(--font-family-base);
-    /* Switch to base font for clean look */
     font-weight: 600;
     font-size: 0.95rem;
     text-transform: none;
-    /* Remove uppercase */
     letter-spacing: 0;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
 }
 
 .navbar-links a:hover,
 .navbar-links a.active {
     color: var(--color-primary);
-    /* Blue hover */
-    text-shadow: none;
+    background-color: rgba(93, 64, 55, 0.05);
+    /* Very subtle brown tint */
 }
 
 .cart-btn {
@@ -66,17 +68,31 @@
     position: absolute;
     top: -5px;
     right: -10px;
-    background-color: var(--color-primary);
+    background: var(--gradient-ocean);
     color: white;
     font-size: 0.75rem;
     font-weight: bold;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid white;
+    border: 2px solid var(--color-surface);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: pulseBadge 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes pulseBadge {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
 }
 
 .navbar-links a::after {

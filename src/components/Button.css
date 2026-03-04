@@ -8,12 +8,13 @@
     font-weight: 600;
     font-size: 0.9rem;
     border-radius: var(--radius-lg);
-    /* Less rounded, more modern */
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     text-decoration: none;
     line-height: 1.2;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn:disabled {
@@ -23,27 +24,40 @@
 
 /* Primary - Steakhouse Brown */
 .btn-primary {
-    background-color: var(--color-primary);
+    background: var(--gradient-ocean);
     color: white;
-    box-shadow: 0 2px 4px rgba(93, 64, 55, 0.2);
+    box-shadow: 0 4px 6px rgba(62, 39, 35, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background-color: #3E2723;
-    /* Darker Brown */
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(93, 64, 55, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(62, 39, 35, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #4A332C 0%, #2E1810 100%);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(62, 39, 35, 0.2);
 }
 
 /* Secondary - Burnt Orange Action */
 .btn-secondary {
-    background-color: var(--color-tertiary);
+    background: var(--gradient-marisco);
     color: white;
+    box-shadow: 0 4px 6px rgba(191, 54, 12, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background-color: #A02E0A;
-    /* Darker Burnt Orange */
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(191, 54, 12, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    background: linear-gradient(45deg, #A02E0A, #BF360C);
+}
+
+.btn-secondary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(191, 54, 12, 0.2);
 }
 
 /* Outline - Brown Border */
@@ -54,7 +68,9 @@
 }
 
 .btn-outline:hover:not(:disabled) {
-    background-color: rgba(93, 64, 55, 0.05);
+    background-color: rgba(93, 64, 55, 0.04);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(93, 64, 55, 0.08);
 }
 
 /* Sizes */

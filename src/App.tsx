@@ -8,6 +8,8 @@ import { UserProvider } from './context/UserContext';
 import { CartProvider } from './context/CartContext';
 import CartDrawer from './components/CartDrawer';
 import MobileFooter from './components/MobileFooter';
+import BundleBuilder from './pages/BundleBuilder';
+import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
 import Footer from './components/Footer';
@@ -17,6 +19,7 @@ function App() {
     <UserProvider>
       <CartProvider>
         <Router basename={import.meta.env.BASE_URL}>
+          <ScrollToTop />
           <Navbar />
           <CartDrawer />
           <div className="content">
@@ -25,6 +28,7 @@ function App() {
               <Route path="/customize" element={<Customize />} />
               <Route path="/consultation" element={<Consultation />} />
               <Route path="/plan" element={<Plan />} />
+              <Route path="/build-bundle" element={<BundleBuilder />} />
             </Routes>
           </div>
           <Footer />

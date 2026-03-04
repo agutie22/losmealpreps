@@ -424,6 +424,8 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    align-items: flex-start;
+    /* Stop text scaling bugs */
     padding: 1rem;
     background-color: white;
     border: 2px solid var(--color-border);
@@ -437,6 +439,12 @@
 .ingredient-btn:hover {
     border-color: var(--color-secondary);
     transform: translateY(-2px);
+}
+
+@media (hover: none) {
+    .ingredient-btn:hover {
+        transform: none;
+    }
 }
 
 .ingredient-btn.active {
@@ -721,7 +729,14 @@
 }
 
 .wizard-main {
-    min-height: 500px;
+    min-height: auto;
+    /* Removed forced height for mobile scaling */
+}
+
+@media (min-width: 901px) {
+    .wizard-main {
+        min-height: 500px;
+    }
 }
 
 .step-description {
@@ -894,11 +909,40 @@
         padding-bottom: 1rem;
     }
 
-    .review-macros {
-        flex-wrap: wrap;
+    .ingredient-grid {
+        grid-template-columns: 1fr;
+        /* Force single column on tiny screens */
+        gap: 0.75rem;
     }
 
-    .macro-pill {
-        flex: 1;
+    .ingredient-btn {
+        min-height: auto;
+        padding: 0.85rem;
     }
+
+    .ing-name {
+        font-size: 0.95rem;
+    }
+
+    .portion-toggle-builder {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .wizard-layout {
+        gap: 1.5rem;
+    }
+
+    .wizard-progress-container {
+        margin-bottom: 1.5rem;
+    }
+}
+
+.review-macros {
+    flex-wrap: wrap;
+}
+
+.macro-pill {
+    flex: 1;
 }

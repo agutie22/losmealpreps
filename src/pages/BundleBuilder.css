@@ -1,0 +1,416 @@
+.bundle-page {
+    /* Uses global page-container padding and standard background */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+}
+
+.bundle-page-content {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--color-text, #1e293b);
+    padding: 2.5rem;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    position: relative;
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bundle-modal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.bundle-modal-header h2 {
+    font-size: 1.8rem;
+    color: #3E2723;
+    margin-bottom: 0.5rem;
+}
+
+.bundle-modal-header p {
+    color: var(--color-text-muted, #64748b);
+}
+
+.combo-builder-section {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.combo-builder-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: #3E2723;
+}
+
+.combo-selectors {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.selector-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.selector-group label {
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.bundle-select {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 1rem;
+    font-family: inherit;
+    background-color: #f8fafc;
+    color: #1e293b;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+.bundle-select:focus {
+    border-color: #B08D55;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(176, 141, 85, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+}
+
+.combo-add-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.qty-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #3E2723;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.qty-btn:hover:not(:disabled) {
+    background-color: #B08D55;
+    color: white;
+    border-color: #B08D55;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(176, 141, 85, 0.2);
+}
+
+.qty-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(176, 141, 85, 0.2);
+}
+
+.qty-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.qty-value {
+    font-weight: 700;
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.bundle-progress {
+    background: linear-gradient(to bottom right, #f8fafc, #f1f5f9);
+    padding: 1.25rem;
+    border-radius: 16px;
+    text-align: center;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.progress-text {
+    font-weight: 700;
+    color: #3E2723;
+    margin-bottom: 0.75rem;
+    display: block;
+    font-size: 1.05rem;
+}
+
+.progress-bar-bg {
+    height: 10px;
+    background-color: #e2e8f0;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3E2723, #5D4037);
+    border-radius: 5px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 2s infinite linear;
+}
+
+.progress-bar-fill.complete {
+    background: linear-gradient(90deg, #B08D55, #D4AF37);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.bundle-modal-footer {
+    display: flex;
+    gap: 1rem;
+}
+
+
+.added-meals-section {
+    margin-bottom: 2rem;
+}
+
+.added-meals-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: #3E2723;
+}
+
+.added-meals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.added-meal-item {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1.25rem;
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    gap: 1rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.added-meal-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e1;
+}
+
+.added-meal-qty {
+    font-weight: 700;
+    color: #B08D55;
+    font-size: 1.1rem;
+    min-width: 30px;
+}
+
+.added-meal-details {
+    flex: 1;
+}
+
+.added-meal-protein {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.2rem;
+}
+
+.added-meal-sides {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.remove-meal-btn {
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    color: #ef4444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    line-height: 1;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.remove-meal-btn:hover {
+    background-color: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+    transform: scale(1.05);
+}
+
+/* --- Mobile Responsiveness --- */
+
+/* Disable aggressive hover transforms on touch devices to prevent jitter */
+@media (hover: none) {
+
+    .qty-btn:hover:not(:disabled),
+    .added-meal-item:hover,
+    .remove-meal-btn:hover {
+        transform: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .bundle-page-content {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .combo-builder-section {
+        padding: 1rem;
+    }
+
+    .bundle-modal-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .combo-add-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .bundle-progress {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .bundle-page-content {
+        width: 100%;
+        padding: 1.25rem;
+        border-radius: 12px;
+    }
+
+    .bundle-modal-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .bundle-modal-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .bundle-modal-header p {
+        font-size: 0.85rem;
+    }
+
+    .combo-builder-section h3 {
+        font-size: 1.1rem;
+    }
+
+    .bundle-select {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .qty-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+
+    .qty-value {
+        font-size: 1rem;
+        width: 20px;
+    }
+
+    .added-meal-item {
+        padding: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .added-meal-qty {
+        font-size: 1rem;
+        min-width: 20px;
+    }
+
+    .added-meal-protein {
+        font-size: 0.95rem;
+        margin-bottom: 0px;
+    }
+
+    .added-meal-sides {
+        font-size: 0.8rem;
+    }
+
+    .remove-meal-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 1rem;
+    }
+}

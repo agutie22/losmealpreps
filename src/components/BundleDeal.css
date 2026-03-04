@@ -1,32 +1,44 @@
 .bundle-deal-card {
     background-color: #B08D55;
-    /* Gold/Brown from image */
     color: #3E2723;
-    /* Dark Brown text */
     padding: 2.5rem;
     text-align: center;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.2);
     max-width: 500px;
     margin: 2rem auto;
-    border: 2px solid #8D6E63;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     position: relative;
     overflow: hidden;
     font-family: 'Playfair Display', serif;
-    /* Assuming a serif font is available or fallback */
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bundle-deal-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 /* Decorative elements */
 .bundle-deal-card::before {
     content: '';
     position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    border: 1px solid rgba(62, 39, 35, 0.3);
-    border-radius: 12px;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    border: 1px solid rgba(62, 39, 35, 0.2);
+    border-radius: 16px;
     pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bundle-deal-card:hover::before {
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    border-color: rgba(62, 39, 35, 0.3);
 }
 
 .bundle-title {
@@ -151,15 +163,17 @@
 
 /* Premium Variant */
 .bundle-deal-card.premium {
-    background-color: #3E2723;
-    /* Dark Brown */
+    background: linear-gradient(135deg, #4E342E, #2E1810);
     color: #B08D55;
-    /* Gold */
-    border-color: #B08D55;
+    border: 1px solid rgba(176, 141, 85, 0.3);
 }
 
 .bundle-deal-card.premium::before {
-    border-color: rgba(176, 141, 85, 0.3);
+    border-color: rgba(176, 141, 85, 0.2);
+}
+
+.bundle-deal-card.premium:hover::before {
+    border-color: rgba(176, 141, 85, 0.4);
 }
 
 .bundle-deal-card.premium .bundle-title {
