@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
+import Meals from './pages/Meals';
 import Customize from './pages/Customize';
 import Consultation from './pages/Consultation';
 import Plan from './pages/Plan';
@@ -25,6 +26,7 @@ function App() {
           <div className="content">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/meals" element={<Meals />} />
               <Route path="/customize" element={<Customize />} />
               <Route path="/consultation" element={<Consultation />} />
               <Route path="/plan" element={<Plan />} />

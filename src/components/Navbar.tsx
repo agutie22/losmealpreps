@@ -13,6 +13,7 @@ const Navbar = () => {
             </div>
             <div className="navbar-links">
                 <Link to="/">Home</Link>
+                <Link to="/meals">Meals</Link>
                 <Link to="/customize">Customize</Link>
                 <Link to="/plan">Plan</Link>
                 <button className="cart-btn" onClick={toggleCart}>

@@ -1,0 +1,68 @@
+.meal-filters-container {
+    width: 100%;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 64px; /* Adjust based on Navbar height */
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.filters-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 4px 1rem;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+    scroll-behavior: smooth;
+    max-width: var(--container-max-width, 1200px);
+    margin: 0 auto;
+}
+
+.filters-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.filter-chip {
+    white-space: nowrap;
+    padding: 8px 20px;
+    border-radius: 100px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.filter-chip:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 71, 161, 0.1);
+}
+
+.filter-chip.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    box-shadow: 0 8px 20px rgba(13, 71, 161, 0.2);
+}
+
+@media (max-width: 768px) {
+    .meal-filters-container {
+        top: 56px; /* Mobile navbar height */
+        padding: 0.75rem 0;
+    }
+    
+    .filter-chip {
+        padding: 6px 16px;
+        font-size: 0.85rem;
+    }
+}

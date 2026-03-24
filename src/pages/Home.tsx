@@ -28,7 +28,8 @@ export default function Home() {
                         />
 
                         <div className="hero-actions">
-                            <Button size="lg" onClick={() => navigate('/customize')}>Start Building</Button>
+                            <Button size="lg" onClick={() => navigate('/meals')}>View Weekly Menu</Button>
+                            <Button variant="outline" size="lg" onClick={() => navigate('/customize')}>Customize A Bowl</Button>
                         </div>
                     </div>
                     {/* ... keep hero image ... */}

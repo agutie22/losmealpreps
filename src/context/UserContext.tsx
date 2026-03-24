@@ -20,17 +20,20 @@ interface UserContextType {
     updateMacroGoals: (goals: Partial<MacroGoals>) => void;
     dietaryPreferences: DietaryPreferences;
     updateDietaryPreferences: (prefs: Partial<DietaryPreferences>) => void;
+    isSubscriber: boolean;
+    toggleSubscription: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [isFirstTimeCustomer, setIsFirstTimeCustomer] = useState(true);
+    const [isSubscriber, setIsSubscriber] = useState(true); // Default to subscriber for better pricing display
     const [macroGoals, setMacroGoals] = useState<MacroGoals>({
         protein: 150,
         carbs: 200,
         fats: 60,
-        calories: 1940 // Derived roughly from above: (150*4) + (200*4) + (60*9) = 600+800+540 = 1940
+        calories: 1940
     });
 
     const [dietaryPreferences, setDietaryPreferences] = useState<DietaryPreferences>({
@@ -43,6 +46,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setIsFirstTimeCustomer(prev => !prev);
     };
 
+    const toggleSubscription = () => {
+        setIsSubscriber(prev => !prev);
+    };
+
     const updateDietaryPreferences = (newPrefs: Partial<DietaryPreferences>) => {
         setDietaryPreferences(prev => ({ ...prev, ...newPrefs }));
     };
@@ -50,7 +57,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const updateMacroGoals = (newGoals: Partial<MacroGoals>) => {
         setMacroGoals(prev => {
             const updated = { ...prev, ...newGoals };
-            // Recalculate calories if not explicitly provided
             if (!newGoals.calories) {
                 updated.calories = (updated.protein * 4) + (updated.carbs * 4) + (updated.fats * 9);
             }
@@ -65,7 +71,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             macroGoals,
             updateMacroGoals,
             dietaryPreferences,
-            updateDietaryPreferences
+            updateDietaryPreferences,
+            isSubscriber,
+            toggleSubscription
         }}>
             {children}
         </UserContext.Provider>

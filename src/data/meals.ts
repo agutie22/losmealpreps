@@ -4,12 +4,14 @@ export interface Meal {
     description: string;
     image: string;
     macros: {
-        protein: number; // grams
-        carbs: number;   // grams
-        fat: number;     // grams
-        calories: number; // kcal
+        protein: number;
+        carbs: number;
+        fat: number;
+        calories: number;
     };
     price: number;
+    subscriberPrice: number;
+    tags: string[];
 }
 
 export const meals: Meal[] = [
@@ -22,9 +24,11 @@ export const meals: Meal[] = [
             protein: 40,
             carbs: 35,
             fat: 15,
-            calories: 435, // 40*4 + 35*4 + 15*9
+            calories: 435, 
         },
         price: 12.99,
+        subscriberPrice: 10.99,
+        tags: ['High Protein', 'Customer Favorite'],
     },
     {
         id: '2',
@@ -35,9 +39,11 @@ export const meals: Meal[] = [
             protein: 45,
             carbs: 40,
             fat: 20,
-            calories: 520, // 45*4 + 40*4 + 20*9
+            calories: 520,
         },
         price: 14.50,
+        subscriberPrice: 12.50,
+        tags: ['High Protein', 'Gluten Free'],
     },
     {
         id: '3',
@@ -48,9 +54,11 @@ export const meals: Meal[] = [
             protein: 30,
             carbs: 10,
             fat: 10,
-            calories: 250, // 30*4 + 10*4 + 10*9
+            calories: 250,
         },
         price: 13.99,
+        subscriberPrice: 11.99,
+        tags: ['Low Carb', 'Keto Friendly', 'Gluten Free'],
     },
     {
         id: '4',
@@ -61,8 +69,10 @@ export const meals: Meal[] = [
             protein: 35,
             carbs: 20,
             fat: 18,
-            calories: 382, // 35*4 + 20*4 + 18*9
+            calories: 382,
         },
         price: 11.50,
+        subscriberPrice: 9.99,
+        tags: ['Breakfast', 'Low Carb'],
     },
 ];

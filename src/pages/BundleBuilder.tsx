@@ -162,6 +162,8 @@ const BundleBuilder: React.FC = () => {
             description: description,
             image: image,
             price: calculateTotalPrice(),
+            subscriberPrice: calculateTotalPrice(), // Bundles are already a deal
+            tags: ['Bundle Deal', isPremium ? 'Premium' : 'Standard'],
             macros: totalMacros
         });
 
