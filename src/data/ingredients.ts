@@ -70,8 +70,8 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p2',
         name: 'Chipotle Style Chicken Breast',
-        price: 13,
-        priceLarge: 16,
+        price: 14,
+        priceLarge: 17,
         category: 'protein',
         macros: { protein: 37, fat: 4, calories: 195, carbs: 0 },
         macrosLarge: { protein: 50, fat: 6, calories: 260, carbs: 0 }

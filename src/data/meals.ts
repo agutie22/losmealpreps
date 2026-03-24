@@ -24,7 +24,7 @@ export const meals: Meal[] = [
             fat: 15,
             calories: 435, // 40*4 + 35*4 + 15*9
         },
-        price: 12.99,
+        price: 13.99,
     },
     {
         id: '2',
