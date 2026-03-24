@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import Button from '../components/Button';
-import { PROTEINS, CARBS, VEGGIES, type Macronutrients, type Ingredient } from '../data/ingredients';
+import { PROTEINS, CARBS, VEGGIES, SAUCES, type Macronutrients, type Ingredient } from '../data/ingredients';
 import './BundleBuilder.css';
 
 interface BundleMealCombination {
@@ -14,7 +14,7 @@ interface BundleMealCombination {
 }
 
 const TARGET_COUNT = 10;
-const STANDARD_PROTEIN_IDS = ['p2', 'p3', 'p5'];
+const STANDARD_PROTEIN_IDS = ['p2', 'p3', 'p5', 'p_tilapia', 'p_bulgogi'];
 const PREMIUM_PROTEIN_IDS = ['p_ribeye', 'p_shrimp', 'p_salmon'];
 
 const BundleBuilder: React.FC = () => {
@@ -46,6 +46,14 @@ const BundleBuilder: React.FC = () => {
     const [selectedCarbId, setSelectedCarbId] = useState<string>(CARBS[0].id);
     const [selectedVeggieId, setSelectedVeggieId] = useState<string>(VEGGIES[0].id);
     const [quantityToAdd, setQuantityToAdd] = useState<number>(1);
+    const [bundleSauces, setBundleSauces] = useState<Array<{ sauceId: string, size: 'standard' | 'large', quantity: number }>>([]);
+    const [selectedExtraSauceId, setSelectedExtraSauceId] = useState<string>(SAUCES[1].id); // Default to Chimichurri
+    const [extraSaucePortionSize, setExtraSaucePortionSize] = useState<'standard' | 'large'>('standard');
+
+    const selectedExtraSauce = useMemo(() => SAUCES.find(s => s.id === selectedExtraSauceId), [selectedExtraSauceId]);
+    const currentExtraSaucePrice = selectedExtraSauce
+        ? (extraSaucePortionSize === 'large' ? selectedExtraSauce.priceLarge : selectedExtraSauce.price)
+        : 0;
 
     // Initial setup
     useEffect(() => {
@@ -87,6 +95,35 @@ const BundleBuilder: React.FC = () => {
         setBundleMeals(prev => prev.filter(m => m.id !== id));
     };
 
+    const handleAddExtraSauce = () => {
+        setBundleSauces(prev => {
+            const existing = prev.find(s => s.sauceId === selectedExtraSauceId && s.size === extraSaucePortionSize);
+            if (existing) {
+                return prev.map(s =>
+                    (s.sauceId === selectedExtraSauceId && s.size === extraSaucePortionSize)
+                        ? { ...s, quantity: s.quantity + 1 }
+                        : s
+                );
+            }
+            return [...prev, { sauceId: selectedExtraSauceId, size: extraSaucePortionSize, quantity: 1 }];
+        });
+    };
+
+    const handleRemoveExtraSauce = (sauceId: string, size: 'standard' | 'large') => {
+        setBundleSauces(prev => prev.filter(s => !(s.sauceId === sauceId && s.size === size)));
+    };
+
+    const calculateTotalPrice = () => {
+        let total = price;
+        bundleSauces.forEach(bs => {
+            const sauce = SAUCES.find(s => s.id === bs.sauceId);
+            if (sauce) {
+                total += (bs.size === 'standard' ? sauce.price : sauce.priceLarge) * bs.quantity;
+            }
+        });
+        return total;
+    };
+
     const handleAddToCart = () => {
         if (totalSelected !== TARGET_COUNT) return;
 
@@ -102,14 +139,29 @@ const BundleBuilder: React.FC = () => {
             totalMacros.calories += (meal.protein.macros.calories + meal.carb.macros.calories + meal.veggie.macros.calories) * meal.quantity;
         });
 
-        const description = `10 Meals (6oz):\n${descriptionParts.join('\n')}`;
+        // Add Sauce Macros and Description
+        bundleSauces.forEach(bs => {
+            const sauce = SAUCES.find(s => s.id === bs.sauceId);
+            if (sauce) {
+                const sauceSizeText = bs.size === 'large' ? '8oz' : '2oz';
+                descriptionParts.push(`${bs.quantity}x Extra Sauce: ${sauce.name} (${sauceSizeText})`);
+
+                const sauceMacros = bs.size === 'standard' ? sauce.macros : sauce.macrosLarge;
+                totalMacros.protein += sauceMacros.protein * bs.quantity;
+                totalMacros.carbs += sauceMacros.carbs * bs.quantity;
+                totalMacros.fat += sauceMacros.fat * bs.quantity;
+                totalMacros.calories += sauceMacros.calories * bs.quantity;
+            }
+        });
+
+        const description = `${TARGET_COUNT} Meals (6oz):\n${descriptionParts.join('\n')}`;
 
         addToCart({
             id: `bundle-${variant}-${Date.now()}`,
             title: title,
             description: description,
             image: image,
-            price: price,
+            price: calculateTotalPrice(),
             macros: totalMacros
         });
 
@@ -245,7 +297,80 @@ const BundleBuilder: React.FC = () => {
                     )}
                 </div>
 
+                {totalSelected === TARGET_COUNT && (
+                    <div className="extra-sauces-section" style={{ marginTop: '2rem', borderTop: '1px solid var(--color-border)', paddingTop: '2rem' }}>
+                        <h3>Add Extra Sauces</h3>
+                        <p className="step-description">Enhance your bundle with optional side sauces.</p>
+
+                        <div className="combo-selectors" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                            <div className="selector-group">
+                                <label>Sauce Type</label>
+                                <select
+                                    value={selectedExtraSauceId}
+                                    onChange={(e) => setSelectedExtraSauceId(e.target.value)}
+                                    className="bundle-select"
+                                >
+                                    {SAUCES.filter(s => s.id !== 's0').map(s => (
+                                        <option key={s.id} value={s.id}>
+                                            {s.name} (+${(extraSaucePortionSize === 'large' ? s.priceLarge : s.price).toFixed(2)})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="selector-group">
+                                <label>Size</label>
+                                <select
+                                    value={extraSaucePortionSize}
+                                    onChange={(e) => setExtraSaucePortionSize(e.target.value as 'standard' | 'large')}
+                                    className="bundle-select"
+                                >
+                                    <option value="standard">2oz</option>
+                                    <option value="large">8oz</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="combo-add-actions" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                            <Button variant="secondary" onClick={handleAddExtraSauce}>
+                                Add {selectedExtraSauce?.name} (+${currentExtraSaucePrice.toFixed(2)})
+                            </Button>
+                        </div>
+
+                        {bundleSauces.length > 0 && (
+                            <div className="added-meals-list" style={{ marginTop: '1.5rem' }}>
+                                {bundleSauces.map((bs, index) => {
+                                    const sauce = SAUCES.find(s => s.id === bs.sauceId);
+                                    return (
+                                        <div key={`${bs.sauceId}-${bs.size}-${index}`} className="added-meal-item">
+                                            <div className="added-meal-qty">{bs.quantity}x</div>
+                                            <div className="added-meal-details">
+                                                <div className="added-meal-protein">{sauce?.name}</div>
+                                                <div className="added-meal-sides">{bs.size === 'large' ? '8oz' : '2oz'}</div>
+                                            </div>
+                                            <button
+                                                className="remove-meal-btn"
+                                                onClick={() => handleRemoveExtraSauce(bs.sauceId, bs.size)}
+                                            >
+                                                &times;
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="bundle-modal-footer">
+                    <div className="bundle-total-price" style={{
+                        textAlign: 'right',
+                        marginBottom: '1rem',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        color: 'var(--color-primary)'
+                    }}>
+                        Total: ${calculateTotalPrice().toFixed(2)}
+                    </div>
                     <Button
                         variant="primary"
                         size="lg"

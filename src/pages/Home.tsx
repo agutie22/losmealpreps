@@ -73,7 +73,7 @@ export default function Home() {
                                     <span className="step-number">1</span>
                                     <div className="step-text">
                                         <strong>Pick Your Protein</strong>
-                                        <p>Steak, Chicken, Shrimp, Salmon, or Ground Beef.</p>
+                                        <p>Steak, Chicken, Shrimp, Salmon, Tilapia, Bulgogi or Ground Beef.</p>
                                     </div>
                                 </div>
                                 <div className="step-item">

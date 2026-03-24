@@ -83,3 +83,20 @@
     padding: 0.85rem 2rem;
     font-size: 1.1rem;
 }
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+    .btn {
+        padding: 0.65rem 1.15rem;
+    }
+    
+    .btn-lg {
+        padding: 1rem 1.5rem;
+        font-size: 1.05rem;
+        width: 100%;
+    }
+
+    .btn-sm {
+        padding: 0.45rem 1rem;
+    }
+}

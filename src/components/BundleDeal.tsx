@@ -47,6 +47,8 @@ const BundleDeal: React.FC<BundleDealProps> = ({ variant = 'standard' }) => {
                         <li>CHIPOTLE CHICKEN</li>
                         <li>CHICKEN THIGH</li>
                         <li>GROUND TURKEY</li>
+                        <li>GOLDEN LEMON TILAPIA</li>
+                        <li>KOREAN BBQ BULGOGI</li>
                     </>
                 )}
             </ul>

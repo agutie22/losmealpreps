@@ -9,9 +9,15 @@ export interface Ingredient {
     id: string;
     name: string;
     price: number;
-    category: 'protein' | 'carb' | 'veggie';
+    category: 'protein' | 'carb' | 'veggie' | 'sauce';
     isPremium?: boolean;
     macros: Macronutrients;
+}
+
+export interface SauceOption extends Ingredient {
+    category: 'sauce';
+    priceLarge: number; // Price for 8oz
+    macrosLarge: Macronutrients; // Macros for 8oz
 }
 
 export interface ProteinOption extends Ingredient {
@@ -64,8 +70,8 @@ export const PROTEINS: ProteinOption[] = [
     {
         id: 'p2',
         name: 'Chipotle Style Chicken Breast',
-        price: 11,
-        priceLarge: 14,
+        price: 14,
+        priceLarge: 17,
         category: 'protein',
         macros: { protein: 37, fat: 4, calories: 195, carbs: 0 },
         macrosLarge: { protein: 50, fat: 6, calories: 260, carbs: 0 }
@@ -96,6 +102,24 @@ export const PROTEINS: ProteinOption[] = [
         category: 'protein',
         macros: { protein: 38, fat: 15, calories: 309, carbs: 0 },
         macrosLarge: { protein: 51, fat: 19, calories: 412, carbs: 0 }
+    },
+    {
+        id: 'p_tilapia',
+        name: 'Golden Lemon Tilapia',
+        price: 9,
+        priceLarge: 11,
+        category: 'protein',
+        macros: { protein: 44, fat: 4, calories: 212, carbs: 0 },
+        macrosLarge: { protein: 58, fat: 5, calories: 285, carbs: 0 }
+    },
+    {
+        id: 'p_bulgogi',
+        name: 'Korean BBQ Bulgogi Beef',
+        price: 13,
+        priceLarge: 15,
+        category: 'protein',
+        macros: { protein: 45, fat: 20, calories: 440, carbs: 20 },
+        macrosLarge: { protein: 60, fat: 27, calories: 587, carbs: 27 }
     },
 ];
 
@@ -137,5 +161,35 @@ export const VEGGIES: Ingredient[] = [
         price: 0,
         category: 'veggie',
         macros: { protein: 0, carbs: 0, fat: 0, calories: 0 }
+    },
+];
+
+export const SAUCES: SauceOption[] = [
+    {
+        id: 's0',
+        name: 'No Sauce',
+        price: 0,
+        priceLarge: 0,
+        category: 'sauce',
+        macros: { protein: 0, carbs: 0, fat: 0, calories: 0 },
+        macrosLarge: { protein: 0, carbs: 0, fat: 0, calories: 0 }
+    },
+    {
+        id: 's1',
+        name: 'Chimichurri',
+        price: 2,
+        priceLarge: 8,
+        category: 'sauce',
+        macros: { protein: 0.5, carbs: 1, fat: 10, calories: 95 },
+        macrosLarge: { protein: 2, carbs: 4, fat: 40, calories: 380 }
+    },
+    {
+        id: 's2',
+        name: 'Red Salsa',
+        price: 1.5,
+        priceLarge: 6,
+        category: 'sauce',
+        macros: { protein: 0, carbs: 2, fat: 0, calories: 10 },
+        macrosLarge: { protein: 1, carbs: 8, fat: 0, calories: 40 }
     },
 ];

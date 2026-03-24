@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import Button from './Button';
-import { PROTEINS, CARBS, VEGGIES, type ProteinOption, type Ingredient } from '../data/ingredients';
+import { PROTEINS, CARBS, VEGGIES, SAUCES, type ProteinOption, type Ingredient, type SauceOption } from '../data/ingredients';
 import '../pages/Customize.css'; // Utilizing existing styles
 
 const MealBuilder = () => {
@@ -14,9 +14,11 @@ const MealBuilder = () => {
     const [selectedProtein, setSelectedProtein] = useState<ProteinOption>(PROTEINS[0]);
     const [selectedCarb, setSelectedCarb] = useState<Ingredient>(CARBS[0]);
     const [selectedVeggie, setSelectedVeggie] = useState<Ingredient>(VEGGIES[0]);
+    const [selectedSauce, setSelectedSauce] = useState<SauceOption>(SAUCES[0]);
     const [builderPortionSize, setBuilderPortionSize] = useState<'standard' | 'large'>('standard');
+    const [saucePortionSize, setSaucePortionSize] = useState<'standard' | 'large'>('standard');
 
-    const totalSteps = 4;
+    const totalSteps = 5;
 
     const scrollToTop = () => {
         if (topRef.current) {
@@ -44,21 +46,24 @@ const MealBuilder = () => {
         let price = builderPortionSize === 'standard' ? selectedProtein.price : selectedProtein.priceLarge;
         price += selectedCarb.price;
         price += selectedVeggie.price;
+        price += saucePortionSize === 'standard' ? selectedSauce.price : selectedSauce.priceLarge;
         return price;
     };
 
     const handleAddToPlan = () => {
         const mealPrice = calculateMealPrice();
         const mealTitle = `Custom: ${selectedProtein.name}`;
-        const mealDesc = `${builderPortionSize === 'large' ? 'Large (8oz)' : 'Standard (6oz)'} | ${selectedCarb.name} | ${selectedVeggie.name}`;
+        const sauceDesc = selectedSauce.id !== 's0' ? ` | Sauce: ${selectedSauce.name} (${saucePortionSize === 'large' ? '8oz' : '2oz'})` : '';
+        const mealDesc = `${builderPortionSize === 'large' ? 'Large (8oz)' : 'Standard (6oz)'} | ${selectedCarb.name} | ${selectedVeggie.name}${sauceDesc}`;
 
         // Calculate Macros
         const proteinMacros = builderPortionSize === 'large' ? selectedProtein.macrosLarge : selectedProtein.macros;
+        const sauceMacros = saucePortionSize === 'large' ? selectedSauce.macrosLarge : selectedSauce.macros;
 
-        const proteinAmount = proteinMacros.protein + selectedCarb.macros.protein + selectedVeggie.macros.protein;
-        const carbAmount = proteinMacros.carbs + selectedCarb.macros.carbs + selectedVeggie.macros.carbs;
-        const fatAmount = proteinMacros.fat + selectedCarb.macros.fat + selectedVeggie.macros.fat;
-        const calorieAmount = proteinMacros.calories + selectedCarb.macros.calories + selectedVeggie.macros.calories;
+        const proteinAmount = proteinMacros.protein + selectedCarb.macros.protein + selectedVeggie.macros.protein + sauceMacros.protein;
+        const carbAmount = proteinMacros.carbs + selectedCarb.macros.carbs + selectedVeggie.macros.carbs + sauceMacros.carbs;
+        const fatAmount = proteinMacros.fat + selectedCarb.macros.fat + selectedVeggie.macros.fat + sauceMacros.fat;
+        const calorieAmount = proteinMacros.calories + selectedCarb.macros.calories + selectedVeggie.macros.calories + sauceMacros.calories;
 
         addToCart({
             id: `custom-${Date.now()}`,
@@ -101,6 +106,11 @@ const MealBuilder = () => {
                     <div className={`wizard-line ${currentStep >= 4 ? 'completed' : ''}`}></div>
                     <div className={`wizard-step ${currentStep >= 4 ? 'completed' : ''} ${currentStep === 4 ? 'current' : ''}`}>
                         <div className="step-circle">4</div>
+                        <span className="step-label">Sauce</span>
+                    </div>
+                    <div className={`wizard-line ${currentStep >= 5 ? 'completed' : ''}`}></div>
+                    <div className={`wizard-step ${currentStep >= 5 ? 'completed' : ''} ${currentStep === 5 ? 'current' : ''}`}>
+                        <div className="step-circle">5</div>
                         <span className="step-label">Review</span>
                     </div>
                 </div>
@@ -211,13 +221,62 @@ const MealBuilder = () => {
         </div>
     );
 
-    const renderStep4_Review = () => {
+    const renderStep4_Sauce = () => (
+        <div className="wizard-content fade-in">
+            <h3>Choose Your Sauce</h3>
+            <p className="step-description">Optionally add a delicious sauce to your meal.</p>
+
+            <div className="portion-toggle-builder mb-2rem">
+                <label>Sauce Size:</label>
+                <div className="toggle-group">
+                    <button
+                        className={saucePortionSize === 'standard' ? 'active' : ''}
+                        onClick={() => setSaucePortionSize('standard')}
+                    >
+                        2oz
+                    </button>
+                    <button
+                        className={saucePortionSize === 'large' ? 'active' : ''}
+                        onClick={() => setSaucePortionSize('large')}
+                    >
+                        8oz
+                    </button>
+                </div>
+            </div>
+
+            <div className="ingredient-grid">
+                {SAUCES.map(sauce => (
+                    <button
+                        key={sauce.id}
+                        className={`ingredient-btn ${selectedSauce.id === sauce.id ? 'active' : ''}`}
+                        onClick={() => setSelectedSauce(sauce)}
+                    >
+                        <div className="ing-name">{sauce.name}</div>
+                        {(saucePortionSize === 'standard' ? sauce.price : sauce.priceLarge) > 0 && (
+                            <div className="ing-price">
+                                +${saucePortionSize === 'standard' ? sauce.price.toFixed(2) : sauce.priceLarge.toFixed(2)}
+                            </div>
+                        )}
+                        {sauce.id !== 's0' && (
+                            <div className="ing-macros-mini">
+                                {saucePortionSize === 'standard' ? sauce.macros.calories : sauce.macrosLarge.calories} Cal
+                            </div>
+                        )}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderStep5_Review = () => {
 
         const proteinMacros = builderPortionSize === 'large' ? selectedProtein.macrosLarge : selectedProtein.macros;
-        const totalProtein = proteinMacros.protein + selectedCarb.macros.protein + selectedVeggie.macros.protein;
-        const totalCarbs = proteinMacros.carbs + selectedCarb.macros.carbs + selectedVeggie.macros.carbs;
-        const totalFat = proteinMacros.fat + selectedCarb.macros.fat + selectedVeggie.macros.fat;
-        const totalCalories = proteinMacros.calories + selectedCarb.macros.calories + selectedVeggie.macros.calories;
+        const sauceMacros = saucePortionSize === 'large' ? selectedSauce.macrosLarge : selectedSauce.macros;
+
+        const totalProtein = proteinMacros.protein + selectedCarb.macros.protein + selectedVeggie.macros.protein + sauceMacros.protein;
+        const totalCarbs = proteinMacros.carbs + selectedCarb.macros.carbs + selectedVeggie.macros.carbs + sauceMacros.carbs;
+        const totalFat = proteinMacros.fat + selectedCarb.macros.fat + selectedVeggie.macros.fat + sauceMacros.fat;
+        const totalCalories = proteinMacros.calories + selectedCarb.macros.calories + selectedVeggie.macros.calories + sauceMacros.calories;
 
         return (
             <div className="wizard-content fade-in">
@@ -245,6 +304,13 @@ const MealBuilder = () => {
                             <strong>{selectedVeggie.name}</strong>
                         </div>
                         <button className="edit-step-btn" onClick={() => setCurrentStep(3)}>Edit</button>
+                    </div>
+                    <div className="review-item">
+                        <span className="review-label">Sauce ({saucePortionSize === 'large' ? '8oz' : '2oz'})</span>
+                        <div className="review-value">
+                            <strong>{selectedSauce.name}</strong>
+                        </div>
+                        <button className="edit-step-btn" onClick={() => setCurrentStep(4)}>Edit</button>
                     </div>
 
                     <div className="review-macros">
@@ -287,7 +353,8 @@ const MealBuilder = () => {
                     {currentStep === 1 && renderStep1_Protein()}
                     {currentStep === 2 && renderStep2_Carbs()}
                     {currentStep === 3 && renderStep3_Veggies()}
-                    {currentStep === 4 && renderStep4_Review()}
+                    {currentStep === 4 && renderStep4_Sauce()}
+                    {currentStep === 5 && renderStep5_Review()}
 
                     {/* Navigation Buttons */}
                     <div className="wizard-navigation">
@@ -320,6 +387,7 @@ const MealBuilder = () => {
                         <p><strong>Protein:</strong> <span className='limit-text'>{selectedProtein.name}</span></p>
                         <p><strong>Carb:</strong> {selectedCarb.name}</p>
                         <p><strong>Veggie:</strong> {selectedVeggie.name}</p>
+                        <p><strong>Sauce:</strong> {selectedSauce.name}</p>
                     </div>
                     <div className="summary-total">
                         Total: <span>${calculateMealPrice().toFixed(2)}</span>
