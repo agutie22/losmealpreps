@@ -39,8 +39,11 @@ const BundleDeal: React.FC<BundleDealProps> = ({ variant = 'standard' }) => {
                 {isPremium ? (
                     <>
                         <li>RIBEYE STEAK</li>
+                        <li>SEASONED GROUND BEEF</li>
+                        <li>COWBOY BUTTER TRI TIP</li>
                         <li>GARLIC BUTTER SHRIMP</li>
                         <li>HONEY GLAZED SALMON</li>
+                        <li>KOREAN BBQ BULGOGI</li>
                     </>
                 ) : (
                     <>
@@ -48,7 +51,6 @@ const BundleDeal: React.FC<BundleDealProps> = ({ variant = 'standard' }) => {
                         <li>CHICKEN THIGH</li>
                         <li>GROUND TURKEY</li>
                         <li>GOLDEN LEMON TILAPIA</li>
-                        <li>KOREAN BBQ BULGOGI</li>
                     </>
                 )}
             </ul>

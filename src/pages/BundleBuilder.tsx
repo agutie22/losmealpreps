@@ -14,8 +14,8 @@ interface BundleMealCombination {
 }
 
 const TARGET_COUNT = 10;
-const STANDARD_PROTEIN_IDS = ['p2', 'p3', 'p5', 'p_tilapia', 'p_bulgogi'];
-const PREMIUM_PROTEIN_IDS = ['p_ribeye', 'p_shrimp', 'p_salmon'];
+const STANDARD_PROTEIN_IDS = ['p2', 'p3', 'p5', 'p_tilapia'];
+const PREMIUM_PROTEIN_IDS = ['p1', 'p4', 'p_ribeye', 'p_shrimp', 'p_salmon', 'p_bulgogi'];
 
 const BundleBuilder: React.FC = () => {
     const location = useLocation();
