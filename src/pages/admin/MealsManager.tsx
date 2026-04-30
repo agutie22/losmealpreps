@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import AdminModal from '../../components/admin/AdminModal';
 import MealEditorForm from './MealEditorForm';
-import type { MealDraft, MealRow } from './types';
+import type { MealDraft, MealRow, IngredientRow } from './types';
 
 type DeleteToast = {
     mealId: string;
@@ -37,6 +37,7 @@ type MealsManagerProps = {
     setMessage: (value: string | null) => void;
     loading: boolean;
     reloadMeals: () => Promise<void>;
+    availableIngredients: IngredientRow[];
 };
 
 function DragHandleIcon() {
@@ -52,29 +53,11 @@ function DragHandleIcon() {
     );
 }
 
-const NUTRITION_OVERRIDE_KEY = 'admin_meal_nutrition_overrides_v1';
-
-function readNutritionOverrides(): Record<string, boolean> {
-    if (typeof window === 'undefined') return {};
-    try {
-        const raw = window.localStorage.getItem(NUTRITION_OVERRIDE_KEY);
-        if (!raw) return {};
-        return JSON.parse(raw) as Record<string, boolean>;
-    } catch {
-        return {};
-    }
-}
-
-function writeNutritionOverrides(value: Record<string, boolean>) {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(NUTRITION_OVERRIDE_KEY, JSON.stringify(value));
-}
-
 function formatPrice(value: number): string {
     return `$${Number.isFinite(value) ? value.toFixed(2) : '0.00'}`;
 }
 
-function createDraft(meal: MealRow, nutritionOverride: boolean): MealDraft {
+function createDraft(meal: MealRow): MealDraft {
     return {
         title: meal.title,
         description: meal.description,
@@ -85,7 +68,7 @@ function createDraft(meal: MealRow, nutritionOverride: boolean): MealDraft {
         fat: meal.fat,
         calories: meal.calories,
         is_active: meal.is_active,
-        nutritionOverride,
+        nutritionOverride: false,
         ingredient_ids: meal.ingredient_ids
     };
 }
@@ -129,7 +112,8 @@ export default function MealsManager({
     refreshMenu,
     setMessage,
     loading,
-    reloadMeals
+    reloadMeals,
+    availableIngredients
 }: MealsManagerProps) {
     const [editingMealId, setEditingMealId] = useState<string | null>(null);
     const [drafts, setDrafts] = useState<Record<string, MealDraft>>({});
@@ -138,7 +122,6 @@ export default function MealsManager({
     const [orderIds, setOrderIds] = useState<string[]>([]);
     const [deleteToasts, setDeleteToasts] = useState<DeleteToast[]>([]);
     const [savingMeals, setSavingMeals] = useState(false);
-    const [overrideMap, setOverrideMap] = useState<Record<string, boolean>>(() => readNutritionOverrides());
     const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'draft'>('all');
     const newRowRefs = useRef<Record<string, HTMLLIElement | null>>({});
 
@@ -176,10 +159,6 @@ export default function MealsManager({
     }, [sortedMeals, mealsById]);
     /* eslint-enable react-hooks/set-state-in-effect */
 
-    useEffect(() => {
-        writeNutritionOverrides(overrideMap);
-    }, [overrideMap]);
-
     useEffect(() => () => {
         deleteToasts.forEach((toast) => window.clearTimeout(toast.timeoutId));
     }, [deleteToasts]);
@@ -192,38 +171,35 @@ export default function MealsManager({
             if (deletedIds.has(meal.id)) return false;
             const matchText = meal.title.toLowerCase().includes(query) || meal.id.toLowerCase().includes(query);
             if (!matchText) return false;
-            const draft = drafts[meal.id] ?? createDraft(meal, overrideMap[meal.id] ?? false);
+            const draft = drafts[meal.id] ?? createDraft(meal);
             if (statusFilter === 'live') return draft.is_active;
             if (statusFilter === 'draft') return !draft.is_active;
             return true;
         });
-    }, [orderedMeals, deletedIds, mealQuery, statusFilter, drafts, overrideMap, mealsById]);
+    }, [orderedMeals, deletedIds, mealQuery, statusFilter, drafts, mealsById]);
 
     const dndEnabled = statusFilter === 'all' && mealQuery.trim() === '';
 
     const getDraft = useCallback(
-        (meal: MealRow): MealDraft => drafts[meal.id] ?? createDraft(meal, overrideMap[meal.id] ?? false),
-        [drafts, overrideMap]
+        (meal: MealRow): MealDraft => drafts[meal.id] ?? createDraft(meal),
+        [drafts]
     );
 
     const isMealFieldDirty = useCallback(
         (meal: MealRow): boolean => {
             if (pendingNewIds.has(meal.id)) return true;
             const draft = getDraft(meal);
-            const protein = draft.nutritionOverride ? draft.protein : meal.protein;
-            const carbs = draft.nutritionOverride ? draft.carbs : meal.carbs;
-            const fat = draft.nutritionOverride ? draft.fat : meal.fat;
-            const calories = draft.nutritionOverride ? draft.calories : meal.calories;
             return (
                 draft.title !== meal.title ||
                 draft.description !== meal.description ||
                 draft.image !== meal.image ||
                 draft.price !== meal.price ||
                 draft.is_active !== meal.is_active ||
-                protein !== meal.protein ||
-                carbs !== meal.carbs ||
-                fat !== meal.fat ||
-                calories !== meal.calories
+                draft.protein !== meal.protein ||
+                draft.carbs !== meal.carbs ||
+                draft.fat !== meal.fat ||
+                draft.calories !== meal.calories ||
+                JSON.stringify(draft.ingredient_ids) !== JSON.stringify(meal.ingredient_ids)
             );
         },
         [getDraft, pendingNewIds]
@@ -265,14 +241,9 @@ export default function MealsManager({
 
     const updateDraft = (meal: MealRow, patch: Partial<MealDraft>) => {
         setDrafts((prev) => {
-            const existing = prev[meal.id] ?? createDraft(meal, overrideMap[meal.id] ?? false);
+            const existing = prev[meal.id] ?? createDraft(meal);
             return { ...prev, [meal.id]: { ...existing, ...patch } };
         });
-    };
-
-    const setNutritionOverride = (meal: MealRow, value: boolean) => {
-        setOverrideMap((prev) => ({ ...prev, [meal.id]: value }));
-        updateDraft(meal, { nutritionOverride: value });
     };
 
     const onDragEnd = (event: DragEndEvent) => {
@@ -378,11 +349,12 @@ export default function MealsManager({
                     description: draft.description,
                     image: draft.image,
                     price: draft.price,
-                    protein: draft.nutritionOverride ? draft.protein : meal.protein,
-                    carbs: draft.nutritionOverride ? draft.carbs : meal.carbs,
-                    fat: draft.nutritionOverride ? draft.fat : meal.fat,
-                    calories: draft.nutritionOverride ? draft.calories : meal.calories,
+                    protein: draft.protein,
+                    carbs: draft.carbs,
+                    fat: draft.fat,
+                    calories: draft.calories,
                     is_active: draft.is_active,
+                    ingredient_ids: draft.ingredient_ids,
                     display_order: index + 1
                 };
                 const dirty = dirtyMealIds.has(id);
@@ -498,10 +470,10 @@ export default function MealsManager({
                             const draft = getDraft(meal);
                             const dirty = dirtyMealIds.has(meal.id);
                             const macros = {
-                                protein: draft.nutritionOverride ? draft.protein : meal.protein,
-                                carbs: draft.nutritionOverride ? draft.carbs : meal.carbs,
-                                fat: draft.nutritionOverride ? draft.fat : meal.fat,
-                                calories: draft.nutritionOverride ? draft.calories : meal.calories
+                                protein: draft.protein,
+                                carbs: draft.carbs,
+                                fat: draft.fat,
+                                calories: draft.calories
                             };
 
                             return (
@@ -626,9 +598,9 @@ export default function MealsManager({
                         meal={editingMeal}
                         draft={getDraft(editingMeal)}
                         updateDraft={(patch) => updateDraft(editingMeal, patch)}
-                        setNutritionOverride={(v) => setNutritionOverride(editingMeal, v)}
                         onDelete={() => softDelete(editingMeal)}
                         supabase={supabase}
+                        availableIngredients={availableIngredients}
                     />
                 )}
             </AdminModal>

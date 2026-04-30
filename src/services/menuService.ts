@@ -85,7 +85,7 @@ export async function getMenuData(): Promise<MenuData> {
     const [mealsResult, ingredientsResult, bundleDealsResult, bundleDealProteinsResult] = await Promise.all([
         supabase
             .from('meal_items')
-            .select('id,title,description,image,price,protein,carbs,fat,calories,is_active,display_order')
+            .select('id,title,description,image,price,ingredient_ids,protein,carbs,fat,calories,is_active,display_order')
             .eq('is_active', true)
             .order('display_order', { ascending: true }),
         supabase

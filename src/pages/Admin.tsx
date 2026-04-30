@@ -284,6 +284,7 @@ export default function Admin() {
                     setMessage={setMessage}
                     loading={loading}
                     reloadMeals={loadAdminData}
+                    availableIngredients={ingredients}
                 />
             )}
 

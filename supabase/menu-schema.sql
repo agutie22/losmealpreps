@@ -4,6 +4,7 @@ create table if not exists public.meal_items (
     description text not null default '',
     image text not null default '',
     price numeric(10,2) not null default 0,
+    ingredient_ids text[] not null default '{}',
     protein numeric(10,2) not null default 0,
     carbs numeric(10,2) not null default 0,
     fat numeric(10,2) not null default 0,
@@ -13,6 +14,24 @@ create table if not exists public.meal_items (
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
+
+-- Auto-update updated_at on any row change
+create or replace function public.set_updated_at()
+returns trigger language plpgsql as $$
+begin new.updated_at = now(); return new; end;
+$$;
+
+drop trigger if exists meal_items_updated_at on public.meal_items;
+create trigger meal_items_updated_at before update on public.meal_items
+    for each row execute function public.set_updated_at();
+
+drop trigger if exists ingredients_updated_at on public.ingredients;
+create trigger ingredients_updated_at before update on public.ingredients
+    for each row execute function public.set_updated_at();
+
+drop trigger if exists bundle_deals_updated_at on public.bundle_deals;
+create trigger bundle_deals_updated_at before update on public.bundle_deals
+    for each row execute function public.set_updated_at();
 
 create table if not exists public.ingredients (
     id text primary key,

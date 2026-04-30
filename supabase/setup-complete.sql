@@ -9,6 +9,7 @@ create table if not exists public.meal_items (
     description text not null default '',
     image text not null default '',
     price numeric(10,2) not null default 0,
+    ingredient_ids text[] not null default '{}',
     protein numeric(10,2) not null default 0,
     carbs numeric(10,2) not null default 0,
     fat numeric(10,2) not null default 0,
@@ -18,6 +19,17 @@ create table if not exists public.meal_items (
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
+
+create or replace function public.set_updated_at()
+returns trigger language plpgsql as $$
+begin new.updated_at = now(); return new; end;
+$$;
+drop trigger if exists meal_items_updated_at on public.meal_items;
+create trigger meal_items_updated_at before update on public.meal_items for each row execute function public.set_updated_at();
+drop trigger if exists ingredients_updated_at on public.ingredients;
+create trigger ingredients_updated_at before update on public.ingredients for each row execute function public.set_updated_at();
+drop trigger if exists bundle_deals_updated_at on public.bundle_deals;
+create trigger bundle_deals_updated_at before update on public.bundle_deals for each row execute function public.set_updated_at();
 
 create table if not exists public.ingredients (
     id text primary key,
@@ -101,23 +113,24 @@ on public.meal_ingredients for select
 using (true);
 
 -- === seed (copy from seed-menu.sql) ===
-insert into public.meal_items (id, title, description, image, price, protein, carbs, fat, calories, is_active, display_order)
+insert into public.meal_items (id, title, description, image, price, ingredient_ids, protein, carbs, fat, calories, is_active, display_order)
 values
-    ('1', 'Cowboy Butter Tri Tip Steak', 'Cowboy Butter Tri Tip Steak served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/C0DD97/FFFFFF?text=Cowboy+Butter+Tri+Tip+Steak', 16.00, 42, 50, 16, 526, true, 1),
-    ('2', 'Ribeye Steak', 'Ribeye Steak served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/F0997B/FFFFFF?text=Ribeye+Steak', 18.00, 52, 50, 21, 615, true, 2),
-    ('3', 'Garlic Butter Shrimp', 'Garlic Butter Shrimp served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/FAC775/FFFFFF?text=Garlic+Butter+Shrimp', 16.00, 41, 50, 4, 415, true, 3),
-    ('4', 'Honey Glazed Salmon', 'Honey Glazed Salmon served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/5DCAA5/FFFFFF?text=Honey+Glazed+Salmon', 17.00, 38, 55, 18, 530, true, 4),
-    ('5', 'Chipotle Style Chicken Breast', 'Chipotle Style Chicken Breast served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/C0DD97/FFFFFF?text=Chipotle+Style+Chicken+Breast', 14.00, 43, 50, 5, 430, true, 5),
-    ('6', 'Marinated Chicken Thigh', 'Marinated Chicken Thigh served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/F0997B/FFFFFF?text=Marinated+Chicken+Thigh', 10.00, 39, 50, 8, 445, true, 6),
-    ('7', 'Seasoned Ground Beef', 'Seasoned Ground Beef served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/FAC775/FFFFFF?text=Seasoned+Ground+Beef', 15.00, 52, 50, 17, 575, true, 7),
-    ('8', 'Serrano Ground Turkey', 'Serrano Ground Turkey served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/5DCAA5/FFFFFF?text=Serrano+Ground+Turkey', 13.00, 44, 50, 16, 544, true, 8),
-    ('9', 'Golden Lemon Tilapia', 'Golden Lemon Tilapia served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/C0DD97/FFFFFF?text=Golden+Lemon+Tilapia', 9.00, 50, 50, 5, 447, true, 9),
-    ('10', 'Korean BBQ Bulgogi Beef', 'Korean BBQ Bulgogi Beef served with Cilantro Lime White Rice and Mixed Vegetables.', 'https://placehold.co/600x400/F0997B/FFFFFF?text=Korean+BBQ+Bulgogi+Beef', 13.00, 51, 70, 21, 675, true, 10)
+    ('1',  'Cowboy Butter Tri Tip Steak',    'Cowboy Butter Tri Tip Steak · Cilantro Lime White Rice · Mixed Vegetables',    'https://placehold.co/600x400/C0DD97/FFFFFF?text=Cowboy+Butter+Tri+Tip+Steak',       16.00, '{p1,c1,v1}',         42, 50, 16, 526, true,  1),
+    ('2',  'Ribeye Steak',                   'Ribeye Steak · Cilantro Lime White Rice · Mixed Vegetables',                   'https://placehold.co/600x400/F0997B/FFFFFF?text=Ribeye+Steak',                       18.00, '{p_ribeye,c1,v1}',   52, 50, 21, 615, true,  2),
+    ('3',  'Garlic Butter Shrimp',           'Garlic Butter Shrimp · Cilantro Lime White Rice · Mixed Vegetables',           'https://placehold.co/600x400/FAC775/FFFFFF?text=Garlic+Butter+Shrimp',               16.00, '{p_shrimp,c1,v1}',   41, 50,  4, 415, true,  3),
+    ('4',  'Honey Glazed Salmon',            'Honey Glazed Salmon · Cilantro Lime White Rice · Mixed Vegetables',            'https://placehold.co/600x400/5DCAA5/FFFFFF?text=Honey+Glazed+Salmon',               17.00, '{p_salmon,c1,v1}',   38, 55, 18, 530, true,  4),
+    ('5',  'Chipotle Style Chicken Breast',  'Chipotle Style Chicken Breast · Cilantro Lime White Rice · Mixed Vegetables',  'https://placehold.co/600x400/C0DD97/FFFFFF?text=Chipotle+Style+Chicken+Breast',    14.00, '{p2,c1,v1}',         43, 50,  5, 430, true,  5),
+    ('6',  'Marinated Chicken Thigh',        'Marinated Chicken Thigh · Cilantro Lime White Rice · Mixed Vegetables',        'https://placehold.co/600x400/F0997B/FFFFFF?text=Marinated+Chicken+Thigh',           10.00, '{p3,c1,v1}',         39, 50,  8, 445, true,  6),
+    ('7',  'Seasoned Ground Beef',           'Seasoned Ground Beef · Cilantro Lime White Rice · Mixed Vegetables',           'https://placehold.co/600x400/FAC775/FFFFFF?text=Seasoned+Ground+Beef',               15.00, '{p4,c1,v1}',         52, 50, 17, 575, true,  7),
+    ('8',  'Serrano Ground Turkey',          'Serrano Ground Turkey · Cilantro Lime White Rice · Mixed Vegetables',          'https://placehold.co/600x400/5DCAA5/FFFFFF?text=Serrano+Ground+Turkey',             13.00, '{p5,c1,v1}',         44, 50, 16, 544, true,  8),
+    ('9',  'Golden Lemon Tilapia',           'Golden Lemon Tilapia · Cilantro Lime White Rice · Mixed Vegetables',           'https://placehold.co/600x400/C0DD97/FFFFFF?text=Golden+Lemon+Tilapia',              9.00,  '{p_tilapia,c1,v1}',  50, 50,  5, 447, true,  9),
+    ('10', 'Korean BBQ Bulgogi Beef',        'Korean BBQ Bulgogi Beef · Cilantro Lime White Rice · Mixed Vegetables',        'https://placehold.co/600x400/F0997B/FFFFFF?text=Korean+BBQ+Bulgogi+Beef',           13.00, '{p_bulgogi,c1,v1}',  51, 70, 21, 675, true, 10)
 on conflict (id) do update set
     title = excluded.title,
     description = excluded.description,
     image = excluded.image,
     price = excluded.price,
+    ingredient_ids = excluded.ingredient_ids,
     protein = excluded.protein,
     carbs = excluded.carbs,
     fat = excluded.fat,

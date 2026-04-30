@@ -9,13 +9,6 @@ import { useCart } from '../context/CartContext';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { useMenu } from '../context/MenuContext';
 
-const HERO_CELLS = [
-    'linear-gradient(160deg, #C0DD97 0%, #7EB53A 100%)',
-    'linear-gradient(160deg, #F0997B 0%, #C45830 100%)',
-    'linear-gradient(160deg, #FAC775 0%, #C88B1A 100%)',
-    'linear-gradient(160deg, #5DCAA5 0%, #1A876A 100%)',
-];
-
 export default function Home() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -34,6 +27,21 @@ export default function Home() {
         }
     }, [location.state]);
 
+    // Scroll reveal
+    useEffect(() => {
+        const els = document.querySelectorAll('.scroll-reveal');
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        els.forEach(el => io.observe(el));
+        return () => io.disconnect();
+    }, []);
+
     const handleSeeBundles = () => {
         document.getElementById('bundles')?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -45,7 +53,10 @@ export default function Home() {
             <header className="hero-section">
                 <div className="hero-container">
                     <div className="hero-text">
-                        <p className="hero-eyebrow">MACRO-PORTIONED · COOKED FRESH WEEKLY</p>
+                        <p className="hero-eyebrow">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden><circle cx="6" cy="6" r="4"/></svg>
+                            MACRO-PORTIONED · COOKED FRESH WEEKLY
+                        </p>
                         <h1 className="hero-h1">Build your bowl.<br />Hit your macros.</h1>
                         <p className="hero-subtitle">
                             Chef-prepared meals tailored to your goals — fresh pickup or LA delivery every week.
@@ -59,8 +70,15 @@ export default function Home() {
                     </div>
 
                     <div className="hero-photo-grid">
-                        {HERO_CELLS.map((bg, i) => (
-                            <div key={i} className="hero-photo-cell" style={{ background: bg }} />
+                        {[0, 1, 2, 3].map(i => (
+                            <div key={i} className="hero-photo-cell">
+                                <div className="hero-photo-placeholder-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                        <circle cx="12" cy="13" r="4" />
+                                    </svg>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -68,31 +86,42 @@ export default function Home() {
 
             {/* ── Trust strip ── */}
             <div className="trust-strip">
-                <span>✓ Macro-tracked</span>
-                <span>✓ Fresh, never frozen</span>
-                <span>✓ Local LA delivery</span>
-                <span>✓ Skip anytime</span>
+                <span className="trust-pill">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Macro-tracked
+                </span>
+                <span className="trust-pill">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Fresh, never frozen
+                </span>
+                <span className="trust-pill">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Local LA delivery
+                </span>
+                <span className="trust-pill">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Skip anytime
+                </span>
             </div>
 
-            {/* ── Live `meal_items` when Supabase is configured; else bundled demo from `data/meals` ── */}
+            {/* ── Signature Meals ── */}
             {!isSupabaseConfigured && (
-                <section id="meals" className="section-container home-signature-meals" aria-label="Signature meals">
+                <section id="meals" className="section-container home-signature-meals scroll-reveal" aria-label="Signature meals">
                     <h2 className="section-title">Signature meals</h2>
                     <p className="section-subtitle">Demo list (add Vite env keys to use your admin menu).</p>
-                    <Feed 
-                        meals={menu.meals} 
-                        onAdd={addToCart} 
-                        onCustomize={(meal) => navigate(`/customize?proteinName=${encodeURIComponent(meal.title)}`)} 
+                    <Feed
+                        meals={menu.meals}
+                        onAdd={addToCart}
+                        onCustomize={(meal) => navigate(`/customize?proteinName=${encodeURIComponent(meal.title)}`)}
                     />
                 </section>
             )}
 
             {isSupabaseConfigured && !usingFallback && (
-                <section id="meals" className="section-container home-signature-meals" aria-label="Signature meals">
+                <section id="meals" className="section-container home-signature-meals scroll-reveal" aria-label="Signature meals">
                     <h2 className="section-title">Signature meals</h2>
                     <p className="section-subtitle">
-                        Pre-built plates from our kitchen. Only meals marked <strong>Live</strong> in the admin (not
-                        draft) are listed here.
+                        Pre-built plates from our kitchen. Only meals marked <strong>Live</strong> in the admin are listed here.
                     </p>
                     {menuLoading && (
                         <p className="section-subtitle" aria-live="polite">Loading the latest menu…</p>
@@ -104,20 +133,17 @@ export default function Home() {
                         </p>
                     )}
                     {!menuLoading && menu.meals.length > 0 && (
-                        <Feed 
-                            meals={menu.meals} 
-                            onAdd={addToCart} 
-                            onCustomize={(meal) => navigate(`/customize?proteinName=${encodeURIComponent(meal.title)}`)} 
+                        <Feed
+                            meals={menu.meals}
+                            onAdd={addToCart}
+                            onCustomize={(meal) => navigate(`/customize?proteinName=${encodeURIComponent(meal.title)}`)}
                         />
                     )}
                 </section>
             )}
 
             {isSupabaseConfigured && usingFallback && menuError && (
-                <section
-                    className="section-container home-signature-meals"
-                    aria-label="Signature meals unavailable"
-                >
+                <section className="section-container home-signature-meals" aria-label="Signature meals unavailable">
                     <h2 className="section-title">Signature meals</h2>
                     <p className="home-menu-fallback" role="alert">
                         {menuError} The fixed meal list is hidden until the menu can load.
@@ -145,9 +171,9 @@ export default function Home() {
             </section>
 
             {/* ── How It Works ── */}
-            <section className="hiw-section">
+            <section className="hiw-section scroll-reveal">
                 <div className="hiw-inner">
-                    <p className="hiw-eyebrow">Simple & Fresh</p>
+                    <p className="hiw-eyebrow">Simple &amp; Fresh</p>
                     <h2 className="hiw-title">How It Works</h2>
 
                     <div className="hiw-grid">
@@ -183,7 +209,7 @@ export default function Home() {
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"></rect><path d="M16 8h4l3 3v5a2 2 0 0 1-2 2h-1"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                             </div>
                             <span className="hiw-step-label">Step 4</span>
-                            <h3>We Cook & Deliver</h3>
+                            <h3>We Cook &amp; Deliver</h3>
                             <p>Chef-prepared meals delivered right to your door.</p>
                         </div>
                     </div>
