@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import './InstructionModal.css';
 
 interface InstructionModalProps {
@@ -8,49 +8,26 @@ interface InstructionModalProps {
 }
 
 const InstructionModal: React.FC<InstructionModalProps> = ({ isOpen, onClose, onComplete }) => {
-    const [timeLeft, setTimeLeft] = useState(3);
-
-    useEffect(() => {
-        if (!isOpen) {
-            setTimeLeft(3);
-            return;
-        }
-
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev <= 1) {
-                    clearInterval(timer);
-                    onComplete();
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, [isOpen, onComplete]);
-
     if (!isOpen) return null;
 
     return (
         <div className="instruction-modal-overlay">
             <div className="instruction-modal-content">
-                <div className="modal-icon">
-                    ✅
-                </div>
+                <div className="modal-icon">✅</div>
                 <h2>Order Copied!</h2>
 
                 <div className="instruction-steps">
-                    <p>Redirecting to Instagram in <b>{timeLeft}</b> seconds...</p>
-                    <p className="sub-text">Paste your order in the chat to complete.</p>
+                    <div className="step-row"><b>①</b> Your order text is copied to clipboard</div>
+                    <div className="step-row"><b>②</b> Open Instagram and go to <b>@losmealpreps</b></div>
+                    <div className="step-row"><b>③</b> Paste your order in the DM and send</div>
                 </div>
 
                 <div className="modal-actions">
                     <button onClick={onComplete} className="modal-btn primary">
-                        Open Instagram Now
+                        Open @losmealpreps DM →
                     </button>
                     <button onClick={onClose} className="modal-btn secondary">
-                        Cancel
+                        I'll do it later
                     </button>
                 </div>
             </div>

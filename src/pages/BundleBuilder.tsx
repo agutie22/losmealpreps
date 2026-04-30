@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useMenu } from '../context/MenuContext';
 import Button from '../components/Button';
-import { PROTEINS, CARBS, VEGGIES, SAUCES, type Macronutrients, type Ingredient } from '../data/ingredients';
+import type { BundleVariant, Macronutrients, Ingredient } from '../types/menu';
 import './BundleBuilder.css';
 
 interface BundleMealCombination {
@@ -13,44 +14,43 @@ interface BundleMealCombination {
     quantity: number;
 }
 
-const TARGET_COUNT = 10;
-const STANDARD_PROTEIN_IDS = ['p2', 'p3', 'p5', 'p_tilapia'];
-const PREMIUM_PROTEIN_IDS = ['p1', 'p4', 'p_ribeye', 'p_shrimp', 'p_salmon', 'p_bulgogi'];
-
 const BundleBuilder: React.FC = () => {
     const location = useLocation();
-    const navigate = useNavigate();
-    const { addToCart } = useCart();
+    const { addToCart, openCart } = useCart();
+    const { menu, loading } = useMenu();
+    const proteins = menu.proteins;
+    const carbs = menu.carbs;
+    const veggies = menu.veggies;
+    const sauces = menu.sauces;
 
     // Parse query params for bundle type
     const queryParams = new URLSearchParams(location.search);
-    const variant = queryParams.get('type') === 'premium' ? 'premium' : 'standard';
+    const variant: BundleVariant = queryParams.get('type') === 'premium' ? 'premium' : 'standard';
 
+    const bundleConfig = menu.bundles[variant];
     const isPremium = variant === 'premium';
-    const price = isPremium ? 150 : 115;
-    const title = isPremium ? 'PREMIUM BUNDLE DEAL' : '10 MEAL BUNDLE DEAL';
-    const allowedProteinIds = isPremium ? PREMIUM_PROTEIN_IDS : STANDARD_PROTEIN_IDS;
-    const image = isPremium
-        ? 'https://placehold.co/600x600/3E2723/B08D55?text=Premium+Bundle'
-        : 'https://placehold.co/600x600/B08D55/3E2723?text=10+Meal+Bundle';
+    const price = bundleConfig.price;
+    const targetCount = bundleConfig.mealCount;
+    const title = bundleConfig.title;
+    const image = bundleConfig.image;
 
     // Filter proteins based on variant
     const currentBundleProteins = useMemo(() => {
-        return PROTEINS.filter(p => allowedProteinIds.includes(p.id));
-    }, [allowedProteinIds]);
+        return proteins.filter((protein) => bundleConfig.allowedProteinIds.includes(protein.id));
+    }, [bundleConfig.allowedProteinIds, proteins]);
 
     const [bundleMeals, setBundleMeals] = useState<BundleMealCombination[]>([]);
 
     // Form state
     const [selectedProteinId, setSelectedProteinId] = useState<string>('');
-    const [selectedCarbId, setSelectedCarbId] = useState<string>(CARBS[0].id);
-    const [selectedVeggieId, setSelectedVeggieId] = useState<string>(VEGGIES[0].id);
+    const [selectedCarbId, setSelectedCarbId] = useState<string>('');
+    const [selectedVeggieId, setSelectedVeggieId] = useState<string>('');
     const [quantityToAdd, setQuantityToAdd] = useState<number>(1);
     const [bundleSauces, setBundleSauces] = useState<Array<{ sauceId: string, size: 'standard' | 'large', quantity: number }>>([]);
-    const [selectedExtraSauceId, setSelectedExtraSauceId] = useState<string>(SAUCES[1].id); // Default to Chimichurri
+    const [selectedExtraSauceId, setSelectedExtraSauceId] = useState<string>('');
     const [extraSaucePortionSize, setExtraSaucePortionSize] = useState<'standard' | 'large'>('standard');
 
-    const selectedExtraSauce = useMemo(() => SAUCES.find(s => s.id === selectedExtraSauceId), [selectedExtraSauceId]);
+    const selectedExtraSauce = useMemo(() => sauces.find(s => s.id === selectedExtraSauceId), [selectedExtraSauceId, sauces]);
     const currentExtraSaucePrice = selectedExtraSauce
         ? (extraSaucePortionSize === 'large' ? selectedExtraSauce.priceLarge : selectedExtraSauce.price)
         : 0;
@@ -61,17 +61,27 @@ const BundleBuilder: React.FC = () => {
             setSelectedProteinId(currentBundleProteins[0].id);
         }
     }, [currentBundleProteins, selectedProteinId]);
+    useEffect(() => {
+        if (carbs.length > 0 && !selectedCarbId) setSelectedCarbId(carbs[0].id);
+    }, [carbs, selectedCarbId]);
+    useEffect(() => {
+        if (veggies.length > 0 && !selectedVeggieId) setSelectedVeggieId(veggies[0].id);
+    }, [veggies, selectedVeggieId]);
+    useEffect(() => {
+        const firstPaidSauce = sauces.find((s) => s.id !== 's0');
+        if (firstPaidSauce && !selectedExtraSauceId) setSelectedExtraSauceId(firstPaidSauce.id);
+    }, [sauces, selectedExtraSauceId]);
 
     const totalSelected = useMemo(() => {
         return bundleMeals.reduce((sum, meal) => sum + meal.quantity, 0);
     }, [bundleMeals]);
 
     const handleAddCombination = () => {
-        if (totalSelected + quantityToAdd > TARGET_COUNT) return;
+        if (totalSelected + quantityToAdd > targetCount) return;
 
         const protein = currentBundleProteins.find(p => p.id === selectedProteinId);
-        const carb = CARBS.find(c => c.id === selectedCarbId);
-        const veggie = VEGGIES.find(v => v.id === selectedVeggieId);
+        const carb = carbs.find(c => c.id === selectedCarbId);
+        const veggie = veggies.find(v => v.id === selectedVeggieId);
 
         if (!protein || !carb || !veggie) return;
 
@@ -87,7 +97,7 @@ const BundleBuilder: React.FC = () => {
 
         // Reset qty
         const newTotal = totalSelected + quantityToAdd;
-        const newRemaining = TARGET_COUNT - newTotal;
+        const newRemaining = targetCount - newTotal;
         setQuantityToAdd(Math.min(1, newRemaining));
     };
 
@@ -116,7 +126,7 @@ const BundleBuilder: React.FC = () => {
     const calculateTotalPrice = () => {
         let total = price;
         bundleSauces.forEach(bs => {
-            const sauce = SAUCES.find(s => s.id === bs.sauceId);
+            const sauce = sauces.find(s => s.id === bs.sauceId);
             if (sauce) {
                 total += (bs.size === 'standard' ? sauce.price : sauce.priceLarge) * bs.quantity;
             }
@@ -125,7 +135,7 @@ const BundleBuilder: React.FC = () => {
     };
 
     const handleAddToCart = () => {
-        if (totalSelected !== TARGET_COUNT) return;
+        if (totalSelected !== targetCount) return;
 
         const descriptionParts: string[] = [];
         const totalMacros: Macronutrients = { protein: 0, carbs: 0, fat: 0, calories: 0 };
@@ -141,7 +151,7 @@ const BundleBuilder: React.FC = () => {
 
         // Add Sauce Macros and Description
         bundleSauces.forEach(bs => {
-            const sauce = SAUCES.find(s => s.id === bs.sauceId);
+            const sauce = sauces.find(s => s.id === bs.sauceId);
             if (sauce) {
                 const sauceSizeText = bs.size === 'large' ? '8oz' : '2oz';
                 descriptionParts.push(`${bs.quantity}x Extra Sauce: ${sauce.name} (${sauceSizeText})`);
@@ -154,7 +164,7 @@ const BundleBuilder: React.FC = () => {
             }
         });
 
-        const description = `${TARGET_COUNT} Meals (6oz):\n${descriptionParts.join('\n')}`;
+        const description = `${targetCount} Meals (6oz):\n${descriptionParts.join('\n')}`;
 
         addToCart({
             id: `bundle-${variant}-${Date.now()}`,
@@ -165,35 +175,37 @@ const BundleBuilder: React.FC = () => {
             macros: totalMacros
         });
 
-        // Return to home or open cart (handled by CartContext opening drawer implicitly if designed that way)
-        navigate('/');
+        openCart();
     };
 
-    const remaining = TARGET_COUNT - totalSelected;
-    const progressPercent = (totalSelected / TARGET_COUNT) * 100;
+    const remaining = targetCount - totalSelected;
+    const progressPercent = targetCount > 0 ? (totalSelected / targetCount) * 100 : 0;
+    const menuReady = bundleConfig.isActive && targetCount > 0 && currentBundleProteins.length > 0 && carbs.length > 0 && veggies.length > 0;
 
     return (
         <div className="page-container bundle-page">
             <div className="bundle-page-content">
                 <div className="bundle-modal-header">
                     <h2>Build Your {isPremium ? 'Premium ' : ''}Bundle</h2>
-                    <p>Select your 10 meals from the options below. (${price})</p>
+                    <p>Select your {targetCount} meals from the options below. (${price})</p>
                 </div>
 
                 <div className="bundle-progress">
                     <span className="progress-text">
-                        {totalSelected} / {TARGET_COUNT} Selected
+                        {totalSelected} / {targetCount} Selected
                         {remaining > 0 ? ` (Pick ${remaining} more)` : ' (Ready!)'}
                     </span>
                     <div className="progress-bar-bg">
                         <div
-                            className={`progress-bar-fill ${totalSelected === TARGET_COUNT ? 'complete' : ''}`}
+                            className={`progress-bar-fill ${totalSelected === targetCount ? 'complete' : ''}`}
                             style={{ width: `${progressPercent}%` }}
                         ></div>
                     </div>
                 </div>
+                {loading && <p className="step-description">Loading live menu...</p>}
+                {!menuReady && !loading && <p className="step-description">Bundle configuration is unavailable right now.</p>}
 
-                {remaining > 0 && (
+                {remaining > 0 && menuReady && (
                     <div className="combo-builder-section">
                         <h3>Add a Meal Combo</h3>
                         <div className="combo-selectors">
@@ -217,7 +229,7 @@ const BundleBuilder: React.FC = () => {
                                     onChange={(e) => setSelectedCarbId(e.target.value)}
                                     className="bundle-select"
                                 >
-                                    {CARBS.map(c => (
+                                    {carbs.map(c => (
                                         <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
                                 </select>
@@ -230,7 +242,7 @@ const BundleBuilder: React.FC = () => {
                                     onChange={(e) => setSelectedVeggieId(e.target.value)}
                                     className="bundle-select"
                                 >
-                                    {VEGGIES.map(v => (
+                                    {veggies.map(v => (
                                         <option key={v.id} value={v.id}>{v.name}</option>
                                     ))}
                                 </select>
@@ -297,7 +309,7 @@ const BundleBuilder: React.FC = () => {
                     )}
                 </div>
 
-                {totalSelected === TARGET_COUNT && (
+                {totalSelected === targetCount && (
                     <div className="extra-sauces-section" style={{ marginTop: '2rem', borderTop: '1px solid var(--color-border)', paddingTop: '2rem' }}>
                         <h3>Add Extra Sauces</h3>
                         <p className="step-description">Enhance your bundle with optional side sauces.</p>
@@ -310,7 +322,7 @@ const BundleBuilder: React.FC = () => {
                                     onChange={(e) => setSelectedExtraSauceId(e.target.value)}
                                     className="bundle-select"
                                 >
-                                    {SAUCES.filter(s => s.id !== 's0').map(s => (
+                                    {sauces.filter(s => s.id !== 's0').map(s => (
                                         <option key={s.id} value={s.id}>
                                             {s.name} (+${(extraSaucePortionSize === 'large' ? s.priceLarge : s.price).toFixed(2)})
                                         </option>
@@ -339,7 +351,7 @@ const BundleBuilder: React.FC = () => {
                         {bundleSauces.length > 0 && (
                             <div className="added-meals-list" style={{ marginTop: '1.5rem' }}>
                                 {bundleSauces.map((bs, index) => {
-                                    const sauce = SAUCES.find(s => s.id === bs.sauceId);
+                                    const sauce = sauces.find(s => s.id === bs.sauceId);
                                     return (
                                         <div key={`${bs.sauceId}-${bs.size}-${index}`} className="added-meal-item">
                                             <div className="added-meal-qty">{bs.quantity}x</div>
@@ -374,11 +386,11 @@ const BundleBuilder: React.FC = () => {
                     <Button
                         variant="primary"
                         size="lg"
-                        disabled={totalSelected !== TARGET_COUNT}
+                        disabled={totalSelected !== targetCount}
                         onClick={handleAddToCart}
                         style={{ width: '100%' }}
                     >
-                        {totalSelected === TARGET_COUNT ? 'Confirm & Add to Cart' : `Select ${remaining} more meals`}
+                        {totalSelected === targetCount ? 'Confirm & Add to Cart' : `Select ${remaining} more meals`}
                     </Button>
                 </div>
             </div>

@@ -113,3 +113,14 @@
     display: flex;
     gap: var(--spacing-sm);
 }
+
+@media (hover: none) {
+    .meal-card:hover {
+        transform: none;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .meal-card:hover .meal-image {
+        transform: none;
+    }
+}

@@ -1,30 +1,4 @@
-export interface Macronutrients {
-    protein: number;
-    carbs: number;
-    fat: number;
-    calories: number;
-}
-
-export interface Ingredient {
-    id: string;
-    name: string;
-    price: number;
-    category: 'protein' | 'carb' | 'veggie' | 'sauce';
-    isPremium?: boolean;
-    macros: Macronutrients;
-}
-
-export interface SauceOption extends Ingredient {
-    category: 'sauce';
-    priceLarge: number; // Price for 8oz
-    macrosLarge: Macronutrients; // Macros for 8oz
-}
-
-export interface ProteinOption extends Ingredient {
-    category: 'protein';
-    priceLarge: number; // Price for 8oz
-    macrosLarge: Macronutrients; // Macros for 8oz
-}
+import type { Ingredient, ProteinOption, SauceOption } from '../types/menu';
 
 export const PROTEINS: ProteinOption[] = [
     {

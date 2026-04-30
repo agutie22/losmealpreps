@@ -1,165 +1,262 @@
-/* content replaced by light theme styles */
+/* ─────────────────────────────────────────────
+   HERO
+───────────────────────────────────────────── */
 .hero-section {
-    background: radial-gradient(circle at top left, var(--color-background) 0%, #EFEBE9 100%);
-    padding: 6rem 2rem 4rem;
-    /* Adjusted for taller feel */
+    background: var(--color-background);
+    padding: 5rem 2rem 4rem;
     border-bottom: 1px solid var(--color-border);
-    position: relative;
-    overflow: hidden;
 }
 
 .hero-container {
-    max-width: 1200px;
+    max-width: 1120px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 3.5rem;
     align-items: center;
 }
 
-.hero-text h1 {
-    font-size: 4rem;
-    line-height: 1.05;
-    font-weight: 900;
+/* Eyebrow */
+.hero-eyebrow {
+    font-family: var(--font-family-base);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 1rem;
+}
+
+/* H1 — override global uppercase */
+.hero-h1 {
+    font-size: clamp(1.75rem, 3.5vw, 2.1rem);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--color-text);
-    margin-bottom: 1.5rem;
-    letter-spacing: -0.03em;
-    background: var(--gradient-ocean);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 2px 10px rgba(93, 64, 55, 0.1);
+    margin: 0 0 0.75rem;
 }
 
 .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: 0.875rem;
     color: var(--color-text-muted);
-    margin-bottom: 2rem;
     line-height: 1.6;
-    max-width: 90%;
+    margin: 0 0 1.75rem;
+    max-width: 480px;
 }
 
 .hero-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
-.hero-image-wrapper {
-    position: relative;
+/* 2 × 2 photo grid */
+.hero-photo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
 }
 
-.hero-image {
+.hero-photo-cell {
     width: 100%;
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-lg);
-    animation: floatImage 6s ease-in-out infinite;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    height: 100%;
 }
 
-@keyframes floatImage {
-    0% {
-        transform: translateY(0) rotate(1deg);
-    }
-
-    50% {
-        transform: translateY(-15px) rotate(-1deg);
-    }
-
-    100% {
-        transform: translateY(0) rotate(1deg);
-    }
+/* ─────────────────────────────────────────────
+   TRUST STRIP
+───────────────────────────────────────────── */
+.trust-strip {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    padding: 0.875rem 2rem;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    letter-spacing: 0.02em;
 }
 
-.hero-image:hover {
-    transform: scale(1.02);
-    box-shadow: 0 25px 50px rgba(62, 39, 35, 0.15);
-    animation-play-state: paused;
+/* ─────────────────────────────────────────────
+   BUNDLE SECTION
+───────────────────────────────────────────── */
+.bundles-section {
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
 }
 
-/* Sections */
-.main-content {
-    padding-bottom: 4rem;
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+    margin: 0 0 0.4rem;
+    text-align: center;
 }
 
-.section-container {
-    max-width: 1200px;
+.section-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    margin: 0 0 2rem;
+}
+
+.home-menu-fallback {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    margin: -0.5rem 0 1.25rem;
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.bundles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    max-width: 820px;
     margin: 0 auto;
-    padding: 4rem 2rem;
+}
+
+/* ─────────────────────────────────────────────
+   SHARED SECTION CONTAINER
+───────────────────────────────────────────── */
+.section-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 3.5rem 2rem;
 }
 
 .section-container.bg-surface {
     background-color: var(--color-surface);
-    margin-top: 2rem;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-md);
-    border: 1px solid rgba(215, 204, 200, 0.3);
-    position: relative;
-    z-index: 2;
+    border: 1px solid var(--color-border);
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
-.section-header {
-    margin-bottom: 3rem;
+/* ─────────────────────────────────────────────
+   HOW IT WORKS (CARD GRID)
+───────────────────────────────────────────── */
+.hiw-section {
+    background: var(--color-background);
+    padding: 4rem 2rem 3rem;
 }
 
-.section-header.center {
+.hiw-inner {
+    max-width: 1120px;
+    margin: 0 auto;
     text-align: center;
 }
 
-.section-header h2 {
-    font-size: 2.5rem;
-    color: var(--color-text);
-    margin-bottom: 0.5rem;
+.hiw-eyebrow {
+    font-family: var(--font-family-base);
+    font-size: 0.7rem;
     font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent-gold);
+    margin: 0 0 0.5rem;
 }
 
-.section-header p {
-    color: var(--color-text-muted);
-    font-size: 1.1rem;
+.hiw-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+    margin: 0 0 2.5rem;
+    text-transform: uppercase;
 }
 
-/* CTA Split */
-.cta-split {
+.hiw-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+}
+
+.hiw-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.25rem 1.75rem;
+    text-align: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hiw-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.hiw-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(186, 117, 23, 0.1) 0%, rgba(61, 40, 23, 0.06) 100%);
+    display: flex;
     align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: var(--color-accent-gold);
 }
 
-.cta-content h2 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color: var(--color-primary);
-}
-
-.cta-content p {
-    font-size: 1.1rem;
+.hiw-step-label {
+    display: block;
+    font-family: var(--font-family-base);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--color-text-muted);
-    margin-bottom: 2rem;
-    line-height: 1.6;
+    margin-bottom: 0.4rem;
 }
 
+.hiw-card h3 {
+    font-family: var(--font-family-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.hiw-card p {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.hiw-cta {
+    text-align: center;
+}
+
+/* ─────────────────────────────────────────────
+   MOBILE
+───────────────────────────────────────────── */
 @media (max-width: 768px) {
     .hero-section {
-        /* display: none; Removed to show hero on mobile */
-        padding: 2rem 1rem;
+        padding: 2.5rem 1.25rem 2rem;
     }
 
     .hero-container {
         grid-template-columns: 1fr;
-        /* Stack vertically */
-        gap: 2.5rem;
-        /* text-align: center; Restored per user request */
+        gap: 2rem;
         text-align: center;
-    }
-
-    /* Reverse order visually so text remains on top, or keep as is. 
-       Default grid order is DOM order. Text is usually first in DOM.
-       If we want Image top, Text bottom, we'd use order property or flex column-reverse.
-       Requirement: "Text top, Image bottom" which is default DOM order if Text is first.
-    */
-
-    .hero-text h1 {
-        font-size: 2.5rem;
     }
 
     .hero-subtitle {
@@ -168,66 +265,91 @@
     }
 
     .hero-actions {
-        /* justify-content: center; Restored per user request */
         justify-content: center;
     }
 
-    .hero-image {
-        max-width: 80%;
-        /* Don't be too huge on mobile */
+    .hero-photo-grid {
+        max-width: 320px;
         margin: 0 auto;
-        display: block;
     }
 
-    .cta-split {
+    .trust-strip {
+        gap: 0.75rem 1.5rem;
+        font-size: 0.72rem;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .bundles-grid {
         grid-template-columns: 1fr;
-        gap: 2rem;
-        text-align: center;
+        max-width: 420px;
+    }
+
+    .bundles-section {
+        padding-top: 2.25rem;
+        padding-bottom: 2.25rem;
+    }
+
+    .section-container {
+        padding: 2rem 1.25rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+    }
+
+    .hiw-section {
+        padding: 2.5rem 1.25rem 2rem;
+    }
+
+    .hiw-title {
+        font-size: 1.35rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .hiw-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .hiw-card {
+        padding: 1.25rem 1rem 1rem;
+    }
+
+    .hiw-icon {
+        width: 44px;
+        height: 44px;
+        margin-bottom: 0.75rem;
+    }
+
+    .hiw-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .hiw-card h3 {
+        font-size: 0.8rem;
+    }
+
+    .hiw-card p {
+        font-size: 0.7rem;
+    }
+
+    .hiw-grid {
+        margin-bottom: 1.5rem;
     }
 }
 
-/* How It Works Steps */
-.how-it-works-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    text-align: left;
-    /* Ensure steps are left-aligned even on mobile if container is centered */
-}
+@media (max-width: 480px) {
+    .hero-h1 {
+        font-size: 1.5rem;
+    }
 
-.step-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-}
-
-.step-number {
-    background: var(--gradient-premium);
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1rem;
-    flex-shrink: 0;
-    margin-top: 2px;
-    box-shadow: 0 4px 6px rgba(176, 141, 85, 0.2);
-}
-
-.step-text strong {
-    display: block;
-    color: var(--color-text);
-    font-size: 1.1rem;
-    margin-bottom: 0.2rem;
-}
-
-/* Override existing p styles for step description */
-.step-item .step-text p {
-    margin-bottom: 0;
-    font-size: 0.95rem;
-    color: var(--color-text-muted);
+    .trust-strip {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        text-align: center;
+        gap: 0.5rem;
+        font-size: 0.7rem;
+        padding: 0.875rem 1.25rem;
+    }
 }

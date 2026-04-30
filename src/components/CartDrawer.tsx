@@ -33,73 +33,35 @@ const CartDrawer: React.FC = () => {
                 </div>
 
                 <div className="cart-items">
-                    {/* User Status Banner - Inside scrollable area */}
-                    <div className="user-status-banner" style={{
-                        backgroundColor: isFirstTimeCustomer ? '#E3F2FD' : '#FFF3E0',
-                        color: isFirstTimeCustomer ? '#0D47A1' : '#E65100',
-                        padding: '1rem',
-                        fontSize: '0.9rem',
-                        borderRadius: '12px',
-                        marginBottom: '1rem',
-                        flexShrink: 0,
-                        border: `1px solid ${isFirstTimeCustomer ? '#BBDEFB' : '#FFE0B2'}`
-                    }}>
-                        <div style={{
-                            display: 'flex',
-                            marginBottom: '1rem',
-                            background: 'rgba(255,255,255,0.5)',
-                            padding: '4px',
-                            borderRadius: '8px',
-                            gap: '4px'
-                        }}>
+                    {/* User Status Banner */}
+                    <div className={`user-status-banner ${isFirstTimeCustomer ? 'status-new' : 'status-returning'}`}>
+                        <div className="status-toggle">
                             <button
+                                className={`status-tab ${isFirstTimeCustomer ? 'active' : ''}`}
                                 onClick={() => !isFirstTimeCustomer && toggleCustomerStatus()}
-                                style={{
-                                    flex: 1,
-                                    padding: '8px 4px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    background: isFirstTimeCustomer ? 'white' : 'transparent',
-                                    boxShadow: isFirstTimeCustomer ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                                    color: isFirstTimeCustomer ? '#0D47A1' : 'inherit',
-                                    fontWeight: isFirstTimeCustomer ? 'bold' : 'normal',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
-                                }}>
+                            >
                                 New Customer
                             </button>
                             <button
+                                className={`status-tab ${!isFirstTimeCustomer ? 'active' : ''}`}
                                 onClick={() => isFirstTimeCustomer && toggleCustomerStatus()}
-                                style={{
-                                    flex: 1,
-                                    padding: '8px 4px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    background: !isFirstTimeCustomer ? 'white' : 'transparent',
-                                    boxShadow: !isFirstTimeCustomer ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                                    color: !isFirstTimeCustomer ? '#E65100' : 'inherit',
-                                    fontWeight: !isFirstTimeCustomer ? 'bold' : 'normal',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
-                                }}>
+                            >
                                 Returning
                             </button>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                            <span style={{ fontSize: '1.2rem' }}>
-                                {isFirstTimeCustomer ? '🎉' : '📝'}
-                            </span>
+                        <div className="status-body">
+                            <span className="status-icon">{isFirstTimeCustomer ? '🎉' : '📝'}</span>
                             <div>
                                 {isFirstTimeCustomer ? (
                                     <>
                                         <strong>No minimums!</strong>
-                                        <div style={{ marginTop: '2px', opacity: 0.9 }}>Try your first meal today. We trust you'll love it!</div>
+                                        <div className="status-sub">Try your first meal today. We trust you'll love it!</div>
                                     </>
                                 ) : (
                                     <>
                                         <strong>Standard Order Policy</strong>
-                                        <div style={{ marginTop: '2px', opacity: 0.9 }}>5 meals minimum OR $60 cart total.</div>
+                                        <div className="status-sub">5 meals minimum OR $60 cart total.</div>
                                     </>
                                 )}
                             </div>
@@ -155,7 +117,7 @@ const CartDrawer: React.FC = () => {
                         }}
                         style={{ width: '100%' }}
                     >
-                        Copy Order & Go to Instagram
+                        Place Order via Instagram
                     </Button>
                 </div>
             </div>

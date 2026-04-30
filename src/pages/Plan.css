@@ -1,8 +1,7 @@
 .plan-page {
-    /* Uses global page-container */
     padding-top: 2rem;
-    padding-bottom: 4rem;
-    max-width: 1200px;
+    padding-bottom: 5rem;
+    max-width: 1100px;
     margin: 0 auto;
     width: 90%;
 }
@@ -12,14 +11,20 @@
 }
 
 .plan-header h1 {
-    font-size: 2.5rem;
-    color: var(--color-primary);
+    font-size: 1.75rem;
+    color: var(--color-text);
+    margin-bottom: 0.3rem;
+}
+
+.plan-header p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
 }
 
 .plan-content {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 3rem;
+    gap: 2.5rem;
 }
 
 @media (max-width: 900px) {
@@ -28,25 +33,28 @@
     }
 }
 
+/* ── Items list ── */
 .plan-items-section h2 {
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.875rem;
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 1rem;
+    color: var(--color-text);
 }
 
 .plan-list {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .plan-item {
     display: flex;
-    gap: 1.5rem;
-    padding: 1.5rem;
-    background-color: white;
-    border-radius: 12px;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     align-items: center;
 }
@@ -59,10 +67,12 @@
 }
 
 .plan-item-img {
-    width: 100px;
-    height: 100px;
+    width: 88px;
+    height: 88px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    background-color: var(--color-background);
 }
 
 .plan-item-info {
@@ -70,15 +80,16 @@
 }
 
 .plan-item-info h3 {
-    margin-bottom: 0.5rem;
-    color: var(--color-primary);
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    color: var(--color-text);
 }
 
 .plan-item-macros {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem;
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     flex-wrap: wrap;
 }
 
@@ -87,6 +98,7 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 @media (max-width: 600px) {
@@ -98,50 +110,73 @@
     }
 }
 
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    width: fit-content;
+}
+
+.qty-controls button {
+    background: none;
+    border: none;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--color-text);
+    padding: 0 4px;
+}
+
 .item-total {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    color: var(--color-text);
 }
 
 .remove-link {
     background: none;
     border: none;
-    color: #ef4444;
+    color: #C0392B;
     text-decoration: underline;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
-/* Summary Section */
+/* ── Summary sidebar ── */
 .plan-summary-section {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.25rem;
 }
 
 .summary-card {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: var(--shadow-md);
+    background-color: var(--color-surface);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
 }
 
 .summary-card h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    color: var(--color-primary);
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+    color: var(--color-text);
 }
 
 .summary-card .subtitle {
     color: var(--color-text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.8rem;
+    margin-bottom: 1.25rem;
 }
 
 .macro-comparison {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .macro-row {
@@ -151,48 +186,130 @@
 .macro-label {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.3rem;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
+    color: var(--color-text-body);
+}
+
+.macro-label small {
+    color: var(--color-text-muted);
+    font-weight: 400;
 }
 
 .progress-bar-bg {
     width: 100%;
-    height: 8px;
-    background-color: #f3f4f6;
-    border-radius: 4px;
+    height: 6px;
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
     overflow: hidden;
 }
 
 .progress-bar-fill {
     height: 100%;
     background-color: var(--color-primary);
-    border-radius: 4px;
+    border-radius: 3px;
     transition: width 0.3s ease;
 }
 
+/* ── Customer type toggle (shared with CartDrawer) ── */
+.status-toggle {
+    display: flex;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    gap: 3px;
+}
+
+.status-tab {
+    flex: 1;
+    padding: 6px 4px;
+    border-radius: calc(var(--radius-sm) - 1px);
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.status-tab.active {
+    background: var(--color-primary);
+    color: #FAF6F0;
+    font-weight: 600;
+}
+
+/* ── Order summary card ── */
 .summary-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 1rem;
-    font-size: 1rem;
+    margin-bottom: 0.875rem;
+    font-size: 0.9rem;
+    color: var(--color-text-body);
 }
 
 .summary-divider {
     height: 1px;
     background-color: var(--color-border);
-    margin: 1.5rem 0;
+    margin: 1.25rem 0;
 }
 
 .summary-row.total {
-    font-weight: 800;
-    font-size: 1.5rem;
-    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--color-text);
+    margin-bottom: 0;
 }
 
+/* ── Empty state ── */
 .empty-state {
     text-align: center;
-    padding: 4rem;
-    background-color: #f9fafb;
-    border-radius: 12px;
+    padding: 3.5rem 2rem;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.empty-state p {
+    color: var(--color-text-muted);
+    margin-bottom: 1.25rem;
+}
+
+/* ── Validation message ── */
+.validation-msg {
+    background-color: #FFF8EC;
+    color: #A05B00;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid rgba(186, 117, 23, 0.25);
+}
+
+.text-right {
+    text-align: right;
+}
+
+@media (max-width: 768px) {
+    .plan-page {
+        padding-bottom: 5.5rem;
+    }
+
+    .summary-card {
+        padding: 1.25rem;
+    }
+
+    .plan-item {
+        padding: 1rem;
+    }
+
+    .plan-item-img {
+        width: 72px;
+        height: 72px;
+    }
 }

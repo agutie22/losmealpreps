@@ -46,22 +46,25 @@
 .navbar-links a:hover,
 .navbar-links a.active {
     color: var(--color-primary);
-    background-color: rgba(93, 64, 55, 0.05);
-    /* Very subtle brown tint */
+    background-color: rgba(61, 40, 23, 0.06);
 }
 
 .cart-btn {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    color: var(--color-text-muted);
     cursor: pointer;
     position: relative;
     margin-left: 1rem;
-    transition: transform 0.2s;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
 }
 
 .cart-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    color: var(--color-primary);
 }
 
 .cart-badge {
@@ -106,7 +109,11 @@
 
 @media (max-width: 768px) {
     .navbar {
-        padding: 1rem 1.5rem;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .navbar-logo {
+        height: 52px;
     }
 
     .navbar-brand {

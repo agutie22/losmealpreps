@@ -1,22 +1,74 @@
-import { useState, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useMenu } from '../context/MenuContext';
 import Button from './Button';
-import { PROTEINS, CARBS, VEGGIES, SAUCES, type ProteinOption, type Ingredient, type SauceOption } from '../data/ingredients';
 import '../pages/Customize.css'; // Utilizing existing styles
 
 const MealBuilder = () => {
-    const { addToCart } = useCart();
+    const { addToCart, openCart } = useCart();
+    const { menu, loading } = useMenu();
     const topRef = useRef<HTMLDivElement>(null);
+    const proteins = menu.proteins;
+    const carbs = menu.carbs;
+    const veggies = menu.veggies;
+    const sauces = menu.sauces;
 
     // Meal Builder State
 
+    const [searchParams] = useSearchParams();
     const [currentStep, setCurrentStep] = useState(1);
-    const [selectedProtein, setSelectedProtein] = useState<ProteinOption>(PROTEINS[0]);
-    const [selectedCarb, setSelectedCarb] = useState<Ingredient>(CARBS[0]);
-    const [selectedVeggie, setSelectedVeggie] = useState<Ingredient>(VEGGIES[0]);
-    const [selectedSauce, setSelectedSauce] = useState<SauceOption>(SAUCES[0]);
+    const [selectedProteinId, setSelectedProteinId] = useState<string | null>(null);
+    const [selectedCarbId, setSelectedCarbId] = useState<string | null>(null);
+    const [selectedVeggieId, setSelectedVeggieId] = useState<string | null>(null);
+    const [selectedSauceId, setSelectedSauceId] = useState<string | null>(null);
     const [builderPortionSize, setBuilderPortionSize] = useState<'standard' | 'large'>('standard');
     const [saucePortionSize, setSaucePortionSize] = useState<'standard' | 'large'>('standard');
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    const selectedProtein = useMemo(
+        () => proteins.find((item) => item.id === selectedProteinId) ?? proteins[0],
+        [proteins, selectedProteinId]
+    );
+    const selectedCarb = useMemo(
+        () => carbs.find((item) => item.id === selectedCarbId) ?? carbs[0],
+        [carbs, selectedCarbId]
+    );
+    const selectedVeggie = useMemo(
+        () => veggies.find((item) => item.id === selectedVeggieId) ?? veggies[0],
+        [veggies, selectedVeggieId]
+    );
+    const selectedSauce = useMemo(
+        () => sauces.find((item) => item.id === selectedSauceId) ?? sauces[0],
+        [sauces, selectedSauceId]
+    );
+
+    useEffect(() => {
+        if (!isInitialized && proteins.length > 0) {
+            const proteinName = searchParams.get('proteinName');
+            let initialProteinId = proteins[0].id;
+            
+            if (proteinName) {
+                const matched = proteins.find(p => p.name === proteinName);
+                if (matched) {
+                    initialProteinId = matched.id;
+                    setCurrentStep(2);
+                }
+            }
+            
+            setSelectedProteinId(initialProteinId);
+            setIsInitialized(true);
+        }
+    }, [proteins, searchParams, isInitialized]);
+    useEffect(() => {
+        if (!selectedCarbId && carbs[0]) setSelectedCarbId(carbs[0].id);
+    }, [selectedCarbId, carbs]);
+    useEffect(() => {
+        if (!selectedVeggieId && veggies[0]) setSelectedVeggieId(veggies[0].id);
+    }, [selectedVeggieId, veggies]);
+    useEffect(() => {
+        if (!selectedSauceId && sauces[0]) setSelectedSauceId(sauces[0].id);
+    }, [selectedSauceId, sauces]);
 
     const totalSteps = 5;
 
@@ -43,6 +95,9 @@ const MealBuilder = () => {
     };
 
     const calculateMealPrice = () => {
+        if (!selectedProtein || !selectedCarb || !selectedVeggie || !selectedSauce) {
+            return 0;
+        }
         let price = builderPortionSize === 'standard' ? selectedProtein.price : selectedProtein.priceLarge;
         price += selectedCarb.price;
         price += selectedVeggie.price;
@@ -51,6 +106,9 @@ const MealBuilder = () => {
     };
 
     const handleAddToPlan = () => {
+        if (!selectedProtein || !selectedCarb || !selectedVeggie || !selectedSauce) {
+            return;
+        }
         const mealPrice = calculateMealPrice();
         const mealTitle = `Custom: ${selectedProtein.name}`;
         const sauceDesc = selectedSauce.id !== 's0' ? ` | Sauce: ${selectedSauce.name} (${saucePortionSize === 'large' ? '8oz' : '2oz'})` : '';
@@ -69,7 +127,7 @@ const MealBuilder = () => {
             id: `custom-${Date.now()}`,
             title: mealTitle,
             description: mealDesc,
-            image: 'https://placehold.co/600x400/1e293b/FFFFFF?text=Custom+Meal',
+            image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect width='600' height='400' fill='%23F0997B'/%3E%3C/svg%3E",
             price: mealPrice,
             macros: {
                 protein: proteinAmount,
@@ -79,9 +137,9 @@ const MealBuilder = () => {
             }
         });
 
-        // Reset or redirect logic could go here
-        // For now, maybe just reset to step 1 for correct flow? 
-        // Or keep user on review page with success message?
+        setCurrentStep(1);
+        scrollToTop();
+        openCart();
     };
 
     // Render Steps
@@ -144,11 +202,11 @@ const MealBuilder = () => {
             {/* Premium Section */}
             <div className="premium-section-header">PREMIUM PROTEINS</div>
             <div className="ingredient-grid premium-grid">
-                {PROTEINS.filter(p => p.isPremium).map(protein => (
+                {proteins.filter(p => p.isPremium).map(protein => (
                     <button
                         key={protein.id}
-                        className={`ingredient-btn premium ${selectedProtein.id === protein.id ? 'active' : ''}`}
-                        onClick={() => setSelectedProtein(protein)}
+                        className={`ingredient-btn premium ${selectedProtein?.id === protein.id ? 'active' : ''}`}
+                        onClick={() => setSelectedProteinId(protein.id)}
                     >
                         <div className="ing-name">{protein.name}</div>
                         <div className="ing-price">
@@ -161,11 +219,11 @@ const MealBuilder = () => {
             {/* Regular Section */}
             <div className="regular-section-header" style={{ marginTop: '2rem', marginBottom: '1rem', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>STANDARD PROTEINS</div>
             <div className="ingredient-grid">
-                {PROTEINS.filter(p => !p.isPremium).map(protein => (
+                {proteins.filter(p => !p.isPremium).map(protein => (
                     <button
                         key={protein.id}
-                        className={`ingredient-btn ${selectedProtein.id === protein.id ? 'active' : ''}`}
-                        onClick={() => setSelectedProtein(protein)}
+                        className={`ingredient-btn ${selectedProtein?.id === protein.id ? 'active' : ''}`}
+                        onClick={() => setSelectedProteinId(protein.id)}
                     >
                         <div className="ing-name">{protein.name}</div>
                         <div className="ing-price">
@@ -182,11 +240,11 @@ const MealBuilder = () => {
             <h3>Choose Your Carb</h3>
             <p className="step-description">Pair your protein with a healthy carbohydrate source.</p>
             <div className="ingredient-grid">
-                {CARBS.map(carb => (
+                {carbs.map(carb => (
                     <button
                         key={carb.id}
-                        className={`ingredient-btn ${selectedCarb.id === carb.id ? 'active' : ''}`}
-                        onClick={() => setSelectedCarb(carb)}
+                        className={`ingredient-btn ${selectedCarb?.id === carb.id ? 'active' : ''}`}
+                        onClick={() => setSelectedCarbId(carb.id)}
                     >
                         <div className="ing-name">{carb.name}</div>
                         {carb.price > 0 && <div className="ing-price">+${carb.price}</div>}
@@ -204,11 +262,11 @@ const MealBuilder = () => {
             <h3>Choose Your Veggies</h3>
             <p className="step-description">Add some greens to complete your meal.</p>
             <div className="ingredient-grid">
-                {VEGGIES.map(veggie => (
+                {veggies.map(veggie => (
                     <button
                         key={veggie.id}
-                        className={`ingredient-btn ${selectedVeggie.id === veggie.id ? 'active' : ''}`}
-                        onClick={() => setSelectedVeggie(veggie)}
+                        className={`ingredient-btn ${selectedVeggie?.id === veggie.id ? 'active' : ''}`}
+                        onClick={() => setSelectedVeggieId(veggie.id)}
                     >
                         <div className="ing-name">{veggie.name}</div>
                         {veggie.price > 0 && <div className="ing-price">+${veggie.price}</div>}
@@ -245,11 +303,11 @@ const MealBuilder = () => {
             </div>
 
             <div className="ingredient-grid">
-                {SAUCES.map(sauce => (
+                {sauces.map(sauce => (
                     <button
                         key={sauce.id}
-                        className={`ingredient-btn ${selectedSauce.id === sauce.id ? 'active' : ''}`}
-                        onClick={() => setSelectedSauce(sauce)}
+                        className={`ingredient-btn ${selectedSauce?.id === sauce.id ? 'active' : ''}`}
+                        onClick={() => setSelectedSauceId(sauce.id)}
                     >
                         <div className="ing-name">{sauce.name}</div>
                         {(saucePortionSize === 'standard' ? sauce.price : sauce.priceLarge) > 0 && (
@@ -338,10 +396,16 @@ const MealBuilder = () => {
 
     return (
         <section className="meal-builder-section">
+            {!selectedProtein || !selectedCarb || !selectedVeggie || !selectedSauce ? (
+                <div className="builder-container">
+                    <p className="step-description">Menu options are not available right now.</p>
+                </div>
+            ) : (
+                <>
             <header className="customize-header">
-                <h1>Build Your Meal</h1>
+                <h1>Customize Your {selectedProtein?.name ?? 'Meal'}</h1>
                 <p>Follow the steps to create your perfect custom meal.</p>
-
+                {loading && <p className="step-description">Loading live menu...</p>}
 
             </header>
 
@@ -404,6 +468,8 @@ const MealBuilder = () => {
                     </div>
                 </div>
             </div>
+                </>
+            )}
         </section>
     );
 };

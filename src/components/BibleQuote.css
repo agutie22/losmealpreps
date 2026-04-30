@@ -1,25 +1,22 @@
 .bible-quote-container {
     text-align: center;
     padding: 2rem;
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
-    font-family: var(--font-family-heading);
-    /* Montserrat for clean look, or switch to serif */
 }
 
 .bible-quote-text {
     font-family: var(--font-family-accent);
-    /* Dancing Script */
-    font-size: 1.75rem;
-    color: var(--color-primary);
-    margin: 0 0 1rem 0;
-    line-height: 1.4;
+    font-size: 1.5rem;
+    color: var(--color-text);
+    margin: 0 0 0.875rem;
+    line-height: 1.45;
     font-style: italic;
 }
 
 .bible-quote-reference {
     display: block;
-    font-size: 1rem;
+    font-size: 0.8rem;
     color: var(--color-text-muted);
     font-weight: 600;
     text-transform: uppercase;
@@ -28,25 +25,16 @@
 }
 
 .quote-description {
-    font-size: 0.9rem;
-    color: var(--color-tertiary);
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    margin-bottom: 1rem;
+    margin-bottom: 0.875rem;
     font-weight: 700;
-}
-
-/* Light theme for dark backgrounds */
-.bible-quote-container.light-theme .bible-quote-text {
-    color: var(--color-surface);
-}
-
-.bible-quote-container.light-theme .bible-quote-reference {
-    color: rgba(255, 255, 255, 0.8);
 }
 
 @media (max-width: 768px) {
     .bible-quote-text {
-        font-size: 1.4rem;
+        font-size: 1.25rem;
     }
 }

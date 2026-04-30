@@ -1,68 +1,87 @@
-export interface Meal {
-    id: string;
-    title: string;
-    description: string;
-    image: string;
-    macros: {
-        protein: number; // grams
-        carbs: number;   // grams
-        fat: number;     // grams
-        calories: number; // kcal
-    };
-    price: number;
-}
+import type { Meal } from '../types/menu';
+
+const warmPlaceholder = (color: string) =>
+    `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect width='600' height='400' fill='${encodeURIComponent(color)}'/%3E%3C/svg%3E`;
 
 export const meals: Meal[] = [
     {
         id: '1',
-        title: 'Creamy Green Chili Chicken',
-        description: 'Grilled chicken breast with our signature creamy poblano sauce and white rice.',
-        image: 'https://placehold.co/600x400/D32F2F/FFFFFF?text=Chicken+Breast',
-        macros: {
-            protein: 40,
-            carbs: 35,
-            fat: 15,
-            calories: 435, // 40*4 + 35*4 + 15*9
-        },
-        price: 13.99,
+        title: 'Cowboy Butter Tri Tip Steak',
+        description: 'Cowboy Butter Tri Tip Steak served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#C0DD97'),
+        macros: { protein: 42, carbs: 50, fat: 16, calories: 526 },
+        price: 16.00,
     },
     {
         id: '2',
-        title: 'Steak & Rice Bowl',
-        description: 'Marinated skirt steak served with beans, rice, and salsa.',
-        image: 'https://placehold.co/600x400/388E3C/FFFFFF?text=Steak+Bowl',
-        macros: {
-            protein: 45,
-            carbs: 40,
-            fat: 20,
-            calories: 520, // 45*4 + 40*4 + 20*9
-        },
-        price: 14.50,
+        title: 'Ribeye Steak',
+        description: 'Ribeye Steak served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#F0997B'),
+        macros: { protein: 52, carbs: 50, fat: 21, calories: 615 },
+        price: 18.00,
     },
     {
         id: '3',
-        title: 'Citrus Shrimp Bowl',
-        description: 'Fresh shrimp marinated in lime and chili, served over mixed greens.',
-        image: 'https://placehold.co/600x400/FFA000/FFFFFF?text=Shrimp+Bowl',
-        macros: {
-            protein: 30,
-            carbs: 10,
-            fat: 10,
-            calories: 250, // 30*4 + 10*4 + 10*9
-        },
-        price: 13.99,
+        title: 'Garlic Butter Shrimp',
+        description: 'Garlic Butter Shrimp served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#FAC775'),
+        macros: { protein: 41, carbs: 50, fat: 4, calories: 415 },
+        price: 16.00,
     },
     {
         id: '4',
-        title: 'Shredded Beef Burrito',
-        description: 'Slow-cooked shredded beef with eggs and peppers in a low-carb tortilla.',
-        image: 'https://placehold.co/600x400/5D4037/FFFFFF?text=Beef+Burrito',
-        macros: {
-            protein: 35,
-            carbs: 20,
-            fat: 18,
-            calories: 382, // 35*4 + 20*4 + 18*9
-        },
-        price: 11.50,
+        title: 'Honey Glazed Salmon',
+        description: 'Honey Glazed Salmon served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#5DCAA5'),
+        macros: { protein: 38, carbs: 55, fat: 18, calories: 530 },
+        price: 17.00,
+    },
+    {
+        id: '5',
+        title: 'Chipotle Style Chicken Breast',
+        description: 'Chipotle Style Chicken Breast served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#C0DD97'),
+        macros: { protein: 43, carbs: 50, fat: 5, calories: 430 },
+        price: 14.00,
+    },
+    {
+        id: '6',
+        title: 'Marinated Chicken Thigh',
+        description: 'Marinated Chicken Thigh served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#F0997B'),
+        macros: { protein: 39, carbs: 50, fat: 8, calories: 445 },
+        price: 10.00,
+    },
+    {
+        id: '7',
+        title: 'Seasoned Ground Beef',
+        description: 'Seasoned Ground Beef served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#FAC775'),
+        macros: { protein: 52, carbs: 50, fat: 17, calories: 575 },
+        price: 15.00,
+    },
+    {
+        id: '8',
+        title: 'Serrano Ground Turkey',
+        description: 'Serrano Ground Turkey served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#5DCAA5'),
+        macros: { protein: 44, carbs: 50, fat: 16, calories: 544 },
+        price: 13.00,
+    },
+    {
+        id: '9',
+        title: 'Golden Lemon Tilapia',
+        description: 'Golden Lemon Tilapia served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#C0DD97'),
+        macros: { protein: 50, carbs: 50, fat: 5, calories: 447 },
+        price: 9.00,
+    },
+    {
+        id: '10',
+        title: 'Korean BBQ Bulgogi Beef',
+        description: 'Korean BBQ Bulgogi Beef served with Cilantro Lime White Rice and Mixed Vegetables.',
+        image: warmPlaceholder('#F0997B'),
+        macros: { protein: 51, carbs: 70, fat: 21, calories: 675 },
+        price: 13.00,
     },
 ];

@@ -1,75 +1,73 @@
-# React + TypeScript + Vite
+# Los Meal Preps
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Meal planning website built with React + TypeScript + Vite.
 
-Currently, two official plugins are available:
+## Supabase menu integration
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The menu is now loaded from Supabase at runtime for seamless client updates without code changes.
 
-## React Compiler
+### 1) Configure environment variables
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+Copy `.env.example` to `.env` and set:
 
-Note: This will impact Vite dev & build performances.
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_ADMIN_EMAIL` (must match the allowlisted address in `supabase/admin-allowlist-email.sql`)
 
-## Expanding the ESLint configuration
+If Supabase is not configured or unreachable, the app automatically falls back to the local menu defaults in `src/data`.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+#### If the CLI was linked to the wrong Supabase project
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. In the **wrong** project (in the Supabase dashboard), open **SQL** and run `supabase/cleanup-mistaken-migration.sql` to drop the menu tables that were created by mistake. Confirm in **Table editor** that you are not deleting unrelated tables of the same name.
+2. In this repo, run `pnpm dlx supabase unlink` (or `supabase unlink`), then `supabase login` with the right account and `supabase link` to the project that matches your `.env`.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+#### Admin auth (one user, no public signups)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Do this in the **same** Supabase project as your `.env` URL/anon key:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. **Add the user**
+   - Go to **Authentication** → **Users** → **Add user** (or **Invite**).
+   - Email: `losmealpreps@gmail.com` (or whatever you set in `VITE_ADMIN_EMAIL` and in RLS).
+   - Save. If magic link is used, the user can leave password empty or use a random one you discard.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. **Stop random people from using magic link / new accounts**
+   - Go to **Authentication** → **Providers** → **Email** (or **Sign In / Providers** in newer UIs).
+   - Turn **off** “Allow new users to sign up” / **Disable sign ups** (wording depends on dashboard version) so new accounts are not created from the app.
+   - The `/admin` screen only offers a “send link” to `VITE_ADMIN_EMAIL` and calls OTP with `shouldCreateUser: false`, so unknown emails cannot be registered via this flow if signups are disabled.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3. **Redirect URLs**
+   - Under **Authentication** → **URL configuration**, set **Site URL** to your site (e.g. production and `http://localhost:5173` for dev) so the magic link redirect works.
+
+### 2) Create Supabase tables
+
+In the **same** Supabase project as `VITE_SUPABASE_URL` (the hostname `https://YOUR_REF.supabase.co` must match **Project Settings → API** and your `.env`):
+
+- **CLI (recommended after link):** `pnpm dlx supabase link --project-ref YOUR_REF` then `pnpm run db:setup`. Check with `pnpm run db:verify` (expect 4 / 18 / 2 / 10 rows).
+- **Or dashboard:** run the entire `supabase/setup-complete.sql` once in the SQL editor (schema + seed + admin email allowlist).
+- **Or** run in order: `supabase/menu-schema.sql`, `supabase/seed-menu.sql`, `supabase/admin-allowlist-email.sql`.
+
+If the site says tables are missing in the “schema cache”, the URL/keys almost always point at a different project than the one where SQL was run, or the API has not reloaded—wait a minute or use API settings to reload the PostgREST schema.
+
+This creates:
+
+- `meal_items`
+- `ingredients`
+- `bundle_deals`
+- `bundle_deal_proteins`
+
+and public read policies for active menu rows.
+
+### 3) Seed menu data
+
+Insert rows into:
+
+- `meal_items` for fixed meals
+- `ingredients` for proteins/carbs/veggies/sauces
+- `bundle_deals` for standard/premium bundle pricing, titles, meal count, image
+- `bundle_deal_proteins` for which proteins are allowed in each bundle
+
+Use `display_order` to control the order shown in the UI and `is_active` to hide/show items.
+
+### 4) Update menu anytime
+
+Your client can update menu rows directly in Supabase, or use the built-in `/admin` dashboard (magic link login) after the admin policies are applied.

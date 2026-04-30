@@ -84,6 +84,14 @@
     font-size: 1.1rem;
 }
 
+@media (hover: none) {
+    .btn-primary:hover:not(:disabled),
+    .btn-secondary:hover:not(:disabled),
+    .btn-outline:hover:not(:disabled) {
+        transform: none;
+    }
+}
+
 /* Mobile Adjustments */
 @media (max-width: 480px) {
     .btn {

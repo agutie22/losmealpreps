@@ -1,90 +1,163 @@
 .global-footer {
-    background-color: var(--color-primary);
-    color: #EFEBE9;
-    padding: 3rem 1.5rem 6rem;
-    /* Extra bottom padding for mobile nav */
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-body);
+    padding: 1rem 1rem 4rem;
     margin-top: auto;
     text-align: center;
 }
 
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto 2rem;
+.footer-top,
+.footer-bottom {
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.footer-top {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
-.footer-brand h3 {
-    color: white;
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    font-family: var(--font-family-heading);
-    display: none;
-    /* Hide text if using logo */
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
 }
 
 .footer-logo {
-    height: 120px;
-    /* Increased size */
+    height: 32px;
     width: auto;
     object-fit: contain;
-    margin-bottom: 1rem;
-    filter: brightness(0) invert(1);
-    /* Make logo white if it's black */
+    margin-bottom: 0;
 }
 
 .footer-tagline {
-    font-size: 0.9rem;
-    opacity: 0.8;
+    font-size: 0.7rem;
+    opacity: 0.85;
+    margin: 0;
+    color: var(--color-text-muted);
 }
 
 .footer-links {
     display: flex;
-    gap: 1.5rem;
+    gap: 1.25rem;
+    justify-content: center;
 }
 
 .footer-links a {
-    color: #EFEBE9;
+    color: var(--color-text);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.75rem;
     transition: color 0.2s;
 }
 
 .footer-links a:hover {
-    color: var(--color-tertiary);
+    color: var(--color-primary);
 }
 
-.footer-scripture {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5rem 0;
-    margin-bottom: 1.5rem;
+/* Faith verse */
+.footer-faith {
+    max-width: 480px;
+    text-align: center;
+}
+
+.footer-verse {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 0.7rem;
+    color: var(--color-text-body);
+    line-height: 1.4;
+    margin: 0 0 0.15rem;
+}
+
+.footer-verse-ref {
+    font-family: var(--font-family-base);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    letter-spacing: 0.04em;
+}
+
+.footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.75rem;
 }
 
 .footer-scripture p {
     font-family: var(--font-family-accent);
-    font-size: 1.25rem;
-    color: #EFEBE9;
-    letter-spacing: 0.05em;
+    font-size: 0.85rem;
+    color: var(--color-text);
+    letter-spacing: 0.03em;
     margin: 0;
 }
 
 .footer-copyright {
-    font-size: 0.8rem;
-    opacity: 0.6;
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    opacity: 0.75;
 }
 
 @media (min-width: 768px) {
     .global-footer {
-        padding-bottom: 3rem;
-        /* Normal padding on desktop */
+        padding: 1.25rem 3rem;
+        background-color: var(--glass-bg);
+        backdrop-filter: var(--backdrop-blur);
+        -webkit-backdrop-filter: var(--backdrop-blur);
     }
 
-    .footer-content {
+    .footer-top {
         flex-direction: row;
         justify-content: space-between;
+        align-items: center;
         text-align: left;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .footer-brand,
+    .footer-faith,
+    .footer-links {
+        flex: 1;
+    }
+
+    .footer-brand {
+        text-align: left;
+    }
+
+    .footer-links {
+        justify-content: flex-end;
+    }
+
+    .footer-bottom {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .footer-logo {
+        height: 45px;
+    }
+
+    .footer-scripture p {
+        font-size: 1rem;
+    }
+
+    .footer-verse {
+        font-size: 0.75rem;
+    }
+
+    .footer-copyright {
+        font-size: 0.75rem;
     }
 }

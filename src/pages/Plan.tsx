@@ -9,7 +9,7 @@ import './Plan.css';
 
 export default function Plan() {
     const { cartItems, cartTotal, removeFromCart, updateQuantity, canCheckout, validationMessage } = useCart();
-    const { macroGoals, isFirstTimeCustomer } = useUser();
+    const { macroGoals, isFirstTimeCustomer, toggleCustomerStatus } = useUser();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Calculate current cart macros
@@ -143,6 +143,22 @@ export default function Plan() {
 
                     <div className="summary-card checkout-card">
                         <h3>Order Summary</h3>
+
+                        <div className="status-toggle" style={{ marginBottom: '1rem' }}>
+                            <button
+                                className={`status-tab ${isFirstTimeCustomer ? 'active' : ''}`}
+                                onClick={() => !isFirstTimeCustomer && toggleCustomerStatus()}
+                            >
+                                New Customer
+                            </button>
+                            <button
+                                className={`status-tab ${!isFirstTimeCustomer ? 'active' : ''}`}
+                                onClick={() => isFirstTimeCustomer && toggleCustomerStatus()}
+                            >
+                                Returning
+                            </button>
+                        </div>
+
                         <div className="summary-row">
                             <span>Subtotal</span>
                             <span>${cartTotal.toFixed(2)}</span>
@@ -174,7 +190,7 @@ export default function Plan() {
                                 });
                             }}
                         >
-                            Copy Order for Instagram
+                            Place Order via Instagram
                         </Button>
                     </div>
                 </div>

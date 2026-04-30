@@ -3,14 +3,14 @@
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #333;
-    color: white;
-    padding: 1rem 1.5rem;
+    background-color: var(--color-primary);
+    color: #FAF6F0;
+    padding: 0.875rem 1.5rem;
     border-radius: 50px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 2000;
+    box-shadow: 0 4px 20px rgba(61, 40, 23, 0.35);
+    z-index: 3000;
     animation: slideUpFade 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    min-width: 300px;
+    min-width: 280px;
     display: flex;
     justify-content: center;
 }

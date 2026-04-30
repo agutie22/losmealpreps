@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import Button from '../components/Button';
-import '../pages/Customize.css'; // Reusing existing styles for consistency
+import './Customize.css';
+import './Consultation.css';
 import { sendConsultationRequest } from '../services/emailService';
 
 const Consultation = () => {
@@ -128,9 +129,9 @@ const Consultation = () => {
             <form onSubmit={handleSubmit} className="consultation-form-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
 
                 {/* Contact Information */}
-                <section className="form-section" style={{ background: 'var(--color-surface)', padding: '2rem', borderRadius: 'var(--radius-lg)', marginBottom: '2rem' }}>
+                <section className="form-section">
                     <h3>Contact Information</h3>
-                    <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-grid">
                         <div className="input-group">
                             <label>Name</label>
                             <input
@@ -167,11 +168,11 @@ const Consultation = () => {
                 </section>
 
                 {/* Macro Calculator / Goals */}
-                <section className="form-section" style={{ background: 'var(--color-surface)', padding: '2rem', borderRadius: 'var(--radius-lg)', marginBottom: '2rem' }}>
+                <section className="form-section">
                     <h3>Your Goals</h3>
-                    <p style={{ marginBottom: '1.5rem', opacity: 0.8 }}>Help us understand your targets so we can build the perfect plan.</p>
+                    <p>Help us understand your targets so we can build the perfect plan.</p>
 
-                    <div className="goal-selection" style={{ marginBottom: '2rem' }}>
+                    <div className="goal-selection">
                         <button
                             type="button"
                             className={`goal-btn ${selectedGoal === 'weight-loss' ? 'active' : ''}`}
@@ -198,30 +199,22 @@ const Consultation = () => {
                         </button>
                     </div>
 
-                    <div className="calculated-macros-preview" style={{
-                        background: 'rgba(0,0,0,0.2)',
-                        padding: '1.5rem',
-                        borderRadius: 'var(--radius-md)',
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(4, 1fr)',
-                        textAlign: 'center',
-                        gap: '1rem'
-                    }}>
-                        <div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-protein)' }}>{localGoals.protein}g</div>
-                            <small>Protein</small>
+                    <div className="calculated-macros-preview">
+                        <div className="macro-preview-cell">
+                            <span className="macro-preview-value" style={{ color: 'var(--color-protein)' }}>{localGoals.protein}g</span>
+                            <span className="macro-preview-label">Protein</span>
                         </div>
-                        <div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-carbs)' }}>{localGoals.carbs}g</div>
-                            <small>Carbs</small>
+                        <div className="macro-preview-cell">
+                            <span className="macro-preview-value" style={{ color: 'var(--color-carbs)' }}>{localGoals.carbs}g</span>
+                            <span className="macro-preview-label">Carbs</span>
                         </div>
-                        <div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-fats)' }}>{localGoals.fats}g</div>
-                            <small>Fats</small>
+                        <div className="macro-preview-cell">
+                            <span className="macro-preview-value" style={{ color: 'var(--color-fats)' }}>{localGoals.fats}g</span>
+                            <span className="macro-preview-label">Fats</span>
                         </div>
-                        <div style={{ borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{localGoals.calories}</div>
-                            <small>Calories</small>
+                        <div className="macro-preview-cell macro-preview-divider">
+                            <span className="macro-preview-value" style={{ color: 'var(--color-text)' }}>{localGoals.calories}</span>
+                            <span className="macro-preview-label">Calories</span>
                         </div>
                     </div>
 
@@ -264,7 +257,7 @@ const Consultation = () => {
                     )}
                 </section>
 
-                <section className="form-section" style={{ background: 'var(--color-surface)', padding: '2rem', borderRadius: 'var(--radius-lg)', marginBottom: '2rem' }}>
+                <section className="form-section">
                     <h3>Dietary Preferences</h3>
                     <div className="dietary-grid">
                         {['Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo', 'Low-Carb'].map(diet => (
@@ -281,7 +274,7 @@ const Consultation = () => {
                 </section>
 
                 <section className="form-section">
-                    <label style={{ display: 'block', marginBottom: '0.5rem' }}>Additional Notes / Questions</label>
+                    <label className="form-notes-label">Additional Notes / Questions</label>
                     <textarea
                         className="text-input"
                         rows={4}
@@ -301,9 +294,9 @@ const Consultation = () => {
                 </Button>
 
                 {formStatus === 'error' && (
-                    <div style={{ color: 'var(--color-error, #ff4444)', marginTop: '1rem', textAlign: 'center' }}>
+                    <p className="form-error">
                         Failed to send request. Please check your connection or try again later.
-                    </div>
+                    </p>
                 )}
 
             </form>

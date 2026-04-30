@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Meal } from '../data/meals';
+import type { Meal } from '../types/menu';
 import { useUser } from './UserContext';
 import Toast from '../components/Toast';
 
@@ -18,6 +18,7 @@ interface CartContextType {
     validationMessage: string | null;
     isCartOpen: boolean;
     toggleCart: () => void;
+    openCart: () => void;
     showToast: (message: string) => void;
 }
 
@@ -67,6 +68,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const toggleCart = () => setIsCartOpen(prev => !prev);
+    const openCart = () => setIsCartOpen(true);
 
     const cartTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -117,6 +119,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             validationMessage,
             isCartOpen,
             toggleCart,
+            openCart,
             showToast
         }}>
             {children}

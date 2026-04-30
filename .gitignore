@@ -13,6 +13,8 @@ dist-ssr
 *.local
 .env
 
+# Supabase CLI local link (not committed)
+supabase/.temp
 
 # Editor directories and files
 .vscode/*

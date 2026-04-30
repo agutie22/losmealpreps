@@ -1,4 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800;900&display=swap');
 @import './styles/variables.css';
 
-/* Other global styles if needed */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+img,
+svg {
+    display: block;
+    max-width: 100%;
+}

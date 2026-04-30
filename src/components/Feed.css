@@ -1,8 +1,7 @@
 .feed-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: var(--spacing-xl);
-    /* Increased gap for cleaner look */
     padding: var(--spacing-xl);
     max-width: 1400px;
     margin: 0 auto;
