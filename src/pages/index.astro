@@ -1,0 +1,157 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import MealsSection from '@/components/react/public/MealsSection';
+import BundlesSection from '@/components/react/public/BundlesSection';
+import { getActiveCustomLineData } from '@/lib/queries/ingredients';
+
+interface PromoGroup { label: string; items: string[] }
+
+const PROMO_CAP = 4;
+
+let customLineGroups: PromoGroup[] = [
+  { label: 'Protein',  items: [] },
+  { label: 'Carbs',    items: [] },
+  { label: 'Veggies',  items: [] },
+  { label: 'Sauces',   items: [] },
+];
+
+try {
+  const { proteins, carbs, veggies, sideSauces } = await getActiveCustomLineData();
+  customLineGroups = [
+    { label: 'Protein', items: proteins.slice(0,   PROMO_CAP).map(i => i.name) },
+    { label: 'Carbs',   items: carbs.slice(0,      PROMO_CAP).map(i => i.name) },
+    { label: 'Veggies', items: veggies.slice(0,    PROMO_CAP).map(i => i.name) },
+    { label: 'Sauces',  items: sideSauces.slice(0, PROMO_CAP).map(i => i.name) },
+  ];
+} catch {
+  // fall through with empty lists — page still renders
+}
+---
+
+<Layout title="Los Meal Preps | Premium Meal Prep">
+  <!-- Hero -->
+  <section class="relative bg-[var(--color-surface-sunken)] py-14 md:py-20 lg:py-28 overflow-hidden">
+    <div class="container mx-auto px-4 sm:px-6 relative z-10 text-center max-w-4xl">
+      <h1 class="font-[family-name:var(--font-display)] font-bold text-[40px] sm:text-[48px] md:text-[64px] lg:text-[76px] text-[var(--color-fg)] leading-[1.05] tracking-tight mb-5 md:mb-6">
+        Premium Meal Prep,<br />Ready for Pickup
+      </h1>
+      <p class="text-[17px] sm:text-[20px] md:text-[22px] text-[var(--color-fg-muted)] mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
+        Chef-made · Macro-tracked · Fresh, never frozen
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a
+          href="/#bundles"
+          class="w-full sm:w-auto inline-flex items-center justify-center bg-[var(--color-brand)] text-[var(--color-surface-elevated)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-[var(--color-brand-hover)] transition-colors shadow-md"
+        >
+          View Bundles
+        </a>
+        <a
+          href="/customize"
+          class="w-full sm:w-auto inline-flex items-center justify-center bg-[var(--color-surface-elevated)] text-[var(--color-brand)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-[var(--color-surface-base)] transition-colors border border-[var(--color-surface-sunken)] shadow-sm"
+        >
+          Build Your Own
+        </a>
+        <a
+          href="/#menu"
+          class="w-full sm:w-auto inline-flex items-center justify-center text-[var(--color-fg-muted)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-medium hover:text-[var(--color-brand)] transition-colors"
+        >
+          Explore Menu
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="py-14 md:py-16 lg:py-20 bg-[var(--color-surface-base)]">
+    <div class="container mx-auto px-4 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto mb-10 md:mb-12">
+        <h2 class="font-[family-name:var(--font-display)] font-bold text-[32px] md:text-[40px] text-[var(--color-fg)] mb-4">How It Works</h2>
+        <p class="text-[18px] text-[var(--color-fg-muted)]">Three simple steps to premium, macro-tracked fuel.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 max-w-5xl mx-auto">
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto bg-[var(--color-surface-sunken)] rounded-full flex items-center justify-center mb-6 text-[24px] font-bold text-[var(--color-brand)]">1</div>
+          <h3 class="font-bold text-[20px] text-[var(--color-fg)] mb-3">Pick Your Plan</h3>
+          <p class="text-[var(--color-fg-muted)] leading-relaxed">Choose a Signature bundle or build a fully custom meal — your macros, your way.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto bg-[var(--color-surface-sunken)] rounded-full flex items-center justify-center mb-6 text-[24px] font-bold text-[var(--color-brand)]">2</div>
+          <h3 class="font-bold text-[20px] text-[var(--color-fg)] mb-3">Order on Instagram</h3>
+          <p class="text-[var(--color-fg-muted)] leading-relaxed">Your order is formatted automatically — hit the button and it opens your Instagram DM ready to send.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto bg-[var(--color-surface-sunken)] rounded-full flex items-center justify-center mb-6 text-[24px] font-bold text-[var(--color-brand)]">3</div>
+          <h3 class="font-bold text-[20px] text-[var(--color-fg)] mb-3">Pick Up &amp; Enjoy</h3>
+          <p class="text-[var(--color-fg-muted)] leading-relaxed">Your meals are prepped fresh and ready for pickup. Just heat and enjoy — no prep, no guesswork.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signature Menu -->
+  <section id="menu" class="py-14 md:py-16 lg:py-20 bg-[var(--color-surface-sunken)]">
+    <div class="container mx-auto px-4 sm:px-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4 md:gap-6">
+        <div class="max-w-2xl">
+          <span class="text-[12px] font-bold uppercase tracking-widest text-[var(--color-accent)] block mb-3">Signature Line</span>
+          <h2 class="font-[family-name:var(--font-display)] font-bold text-[30px] md:text-[40px] text-[var(--color-fg)] mb-3 md:mb-4">Chef's Signature Meals</h2>
+          <p class="text-[16px] md:text-[18px] text-[var(--color-fg-muted)]">Fixed, chef-crafted dishes. Every macro tracked, every portion calibrated.</p>
+        </div>
+        <a href="/#bundles" class="shrink-0 inline-flex items-center gap-2 text-[14px] font-medium text-[var(--color-brand)] hover:underline py-1">
+          Bundle &amp; save →
+        </a>
+      </div>
+      <MealsSection client:only="react" />
+    </div>
+  </section>
+
+  <!-- Custom Meal Promo -->
+  <section class="py-14 md:py-16 lg:py-20 bg-[var(--color-accent-soft)]">
+    <div class="container mx-auto px-4 sm:px-6">
+      <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
+        <div>
+          <span class="text-[12px] font-bold uppercase tracking-widest text-[var(--color-accent)] block mb-4">Custom Line</span>
+          <h2 class="font-[family-name:var(--font-display)] font-bold text-[30px] md:text-[40px] text-[var(--color-fg)] leading-tight mb-5 md:mb-6">
+            Build Exactly What Your Macros Need
+          </h2>
+          <p class="text-[16px] md:text-[18px] text-[var(--color-fg-muted)] mb-7 md:mb-8 leading-relaxed">
+            Choose your protein, carb, veggies, and sauce. Live macros update as you build — no surprises, no guesswork.
+          </p>
+          <a
+            href="/customize"
+            class="inline-flex items-center justify-center bg-[var(--color-brand)] text-[var(--color-surface-elevated)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-[var(--color-brand-hover)] transition-colors shadow-md"
+          >
+            Start Building →
+          </a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          {customLineGroups.map(group => (
+            <div class="bg-[var(--color-surface-elevated)] rounded-[var(--radius-card)] p-4 sm:p-5 shadow-[var(--shadow-card)]">
+              <p class="text-[11px] font-bold uppercase tracking-widest text-[var(--color-accent)] mb-3">{group.label}</p>
+              <ul class="space-y-1.5">
+                {group.items.map(item => (
+                  <li class="text-[13px] text-[var(--color-fg-muted)]">{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bundles -->
+  <section id="bundles" class="py-14 md:py-16 lg:py-20 bg-[var(--color-surface-base)]">
+    <div class="container mx-auto px-4 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto mb-10 md:mb-12">
+        <span class="text-[12px] font-bold uppercase tracking-widest text-[var(--color-accent)] block mb-3">Signature Bundles</span>
+        <h2 class="font-[family-name:var(--font-display)] font-bold text-[32px] md:text-[40px] text-[var(--color-fg)] mb-4">Choose Your Plan</h2>
+        <p class="text-[18px] text-[var(--color-fg-muted)]">Commit to a weekly pack and save. Mix and match any signature meals.</p>
+        <p class="text-[13px] text-[var(--color-fg-muted)] mt-4">
+          New clients may order a single meal. Returning clients should order at least $60 total or 5 meals.
+        </p>
+      </div>
+      <BundlesSection client:only="react" />
+    </div>
+  </section>
+</Layout>

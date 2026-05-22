@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Los Meal Preps">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f5f4d" />
+      <stop offset="100%" stop-color="#154f40" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a574" />
+      <stop offset="100%" stop-color="#b77c3e" />
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="url(#bg)" />
+  <path d="M16 40c2.7 6.3 8.8 10 16 10s13.3-3.7 16-10" fill="none" stroke="#f8efe4" stroke-width="3.2" stroke-linecap="round" />
+  <path d="M22 24v13h8.5" fill="none" stroke="#f8efe4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M35.5 37V24h6.8c4 0 6.2 2 6.2 5.1 0 3.3-2.4 5.3-6.6 5.3h-2.5" fill="none" stroke="url(#accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

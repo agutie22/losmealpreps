@@ -1,0 +1,29 @@
+---
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout title="Page Not Found | Los Meal Preps">
+  <div class="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+    <h1 class="font-[family-name:var(--font-display)] font-bold text-[80px] leading-none text-[var(--color-brand)] mb-4">
+      404
+    </h1>
+    <p class="text-[20px] font-medium text-[var(--color-fg)] mb-2">Page not found</p>
+    <p class="text-[var(--color-fg-muted)] text-[15px] mb-10 max-w-sm">
+      That page doesn't exist. Head back to the menu or start building a bundle.
+    </p>
+    <div class="flex gap-4">
+      <a
+        href="/"
+        class="px-6 py-3 rounded-[var(--radius-pill)] border border-[var(--color-surface-sunken)] text-[14px] font-medium text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors"
+      >
+        Go home
+      </a>
+      <a
+        href="/build"
+        class="px-6 py-3 rounded-[var(--radius-pill)] bg-[var(--color-brand)] text-[var(--color-surface-elevated)] text-[14px] font-medium hover:bg-[var(--color-brand-hover)] transition-colors"
+      >
+        Build a bundle
+      </a>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  /* === Surfaces — warm neutrals, no pure white === */
+  --color-surface-base:     #FAFAF7;   /* page background — paper white */
+  --color-surface-elevated: #FFFFFF;   /* cards */
+  --color-surface-sunken:   #F1EFEA;   /* sub-sections, filter bar bg */
+  --color-surface-inverse:  #1A1A1A;   /* dark sections, footer */
+
+  /* === Brand: charcoal-led, food-photography-friendly === */
+  --color-brand:            #1A1A1A;   /* deep charcoal — primary CTAs */
+  --color-brand-hover:      #000000;
+  --color-brand-soft:       #E8E6E1;   /* tinted backgrounds */
+  --color-accent:           #B8552E;   /* warm terracotta — sale/savings flag */
+  --color-accent-soft:      #F5E4D8;
+  --color-highlight:        #C9A35F;   /* muted ochre — tertiary highlight */
+
+  /* === Text === */
+  --color-fg:               #1A1A1A;
+  --color-fg-muted:         #5A574F;
+  --color-fg-subtle:        #8A857B;
+  --color-fg-inverse:       #FAFAF7;
+
+  /* === Macro pills === */
+  --color-macro-cal:        #1A1A1A;
+  --color-macro-protein:    #A04032;
+  --color-macro-carbs:      #B0762A;
+  --color-macro-fat:        #6B4A2C;
+
+  /* === Type === */
+  --font-display: "Fraunces", "Recoleta", Georgia, serif;
+  --font-body:    "Inter", system-ui, -apple-system, sans-serif;
+
+  --text-display-xl: 4.5rem;
+  --text-display-l:  3rem;
+  --text-display-m:  2rem;
+  --text-body-l:     1.125rem;
+  --text-body:       1rem;
+  --text-body-s:     0.875rem;
+  --text-caption:    0.75rem;
+
+  /* === Radii === */
+  --radius-card:   16px;
+  --radius-pill:   9999px;             /* CTAs are full pills */
+  --radius-tag:    9999px;
+  --radius-input:  10px;
+
+  /* === Shadows — soft, never harsh === */
+  --shadow-card:        0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
+  --shadow-card-hover:  0 1px 2px rgb(0 0 0 / 0.04), 0 16px 40px rgb(0 0 0 / 0.10);
+  --shadow-rail:        0 0 0 1px rgb(0 0 0 / 0.04), 0 12px 32px rgb(0 0 0 / 0.08);
+
+  /* === Motion === */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 420ms;
+
+  /* === Shadcn UI Support Mappings === */
+  --color-border: var(--color-surface-sunken);
+  --color-input: var(--color-surface-sunken);
+  --color-ring: var(--color-brand);
+  --color-background: var(--color-surface-base);
+  --color-foreground: var(--color-fg);
+
+  --color-primary: var(--color-brand);
+  --color-primary-foreground: var(--color-surface-elevated);
+  --color-secondary: var(--color-surface-sunken);
+  --color-secondary-foreground: var(--color-brand);
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: var(--color-surface-elevated);
+  --color-muted: var(--color-surface-sunken);
+  --color-muted-foreground: var(--color-fg-muted);
+  --color-popover: var(--color-surface-elevated);
+  --color-popover-foreground: var(--color-fg);
+  
+  --radius-sm: calc(var(--radius-input) - 4px);
+  --radius-md: calc(var(--radius-input) - 2px);
+  --radius-lg: var(--radius-input);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}

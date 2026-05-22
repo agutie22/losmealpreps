@@ -1,0 +1,8 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import BundleBuilder from '@/components/react/builder/BundleBuilder';
+---
+
+<Layout title="Build Your Bundle | Los Meal Preps">
+  <BundleBuilder client:only="react" />
+</Layout>

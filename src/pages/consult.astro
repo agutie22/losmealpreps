@@ -1,0 +1,22 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import ConsultationForm from '@/components/react/public/ConsultationForm';
+---
+
+<Layout title="Nutrition Consultation | Los Meal Preps" description="Request macro guidance or a personalized meal prep plan built around your body type, goals, restrictions, and preferences.">
+  <div class="bg-[var(--color-surface-base)] border-b border-[var(--color-surface-sunken)]">
+    <div class="container mx-auto px-6 py-12 text-center">
+      <p class="text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--color-brand)] mb-4">
+        Macro guidance and custom planning
+      </p>
+      <h1 class="font-[family-name:var(--font-display)] font-bold text-[40px] sm:text-[48px] text-[var(--color-fg)] leading-tight mb-4">
+        Request a Nutrition Consultation
+      </h1>
+      <p class="text-[var(--color-fg-muted)] text-[16px] max-w-2xl mx-auto">
+        Not sure what macros you need, or want something more personalized than the current menu? Tell us about your goals and we will follow up with a plan direction.
+      </p>
+    </div>
+  </div>
+
+  <ConsultationForm client:only="react" />
+</Layout>

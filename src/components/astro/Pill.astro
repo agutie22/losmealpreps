@@ -1,0 +1,26 @@
+---
+interface Props {
+  text: string;
+  variant?: 'default' | 'cal' | 'protein' | 'carbs' | 'fat' | 'custom';
+  customColor?: string;
+}
+
+const { text, variant = 'default', customColor } = Astro.props;
+
+let colorClass = 'bg-[var(--color-surface-sunken)] text-[var(--color-fg-muted)]';
+
+switch (variant) {
+  case 'cal': colorClass = 'bg-[var(--color-macro-cal)]/10 text-[var(--color-macro-cal)]'; break;
+  case 'protein': colorClass = 'bg-[var(--color-macro-protein)]/10 text-[var(--color-macro-protein)]'; break;
+  case 'carbs': colorClass = 'bg-[var(--color-macro-carbs)]/10 text-[var(--color-macro-carbs)]'; break;
+  case 'fat': colorClass = 'bg-[var(--color-macro-fat)]/10 text-[var(--color-macro-fat)]'; break;
+  case 'custom': colorClass = ''; break;
+}
+---
+
+<span 
+  class={`inline-flex items-center px-2.5 py-0.5 rounded-[var(--radius-tag)] text-[11px] font-semibold tracking-wide uppercase ${colorClass}`}
+  style={variant === 'custom' && customColor ? `background-color: color-mix(in srgb, ${customColor} 15%, transparent); color: ${customColor};` : undefined}
+>
+  {text}
+</span>

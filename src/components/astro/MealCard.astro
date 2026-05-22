@@ -1,0 +1,50 @@
+---
+import Pill from './Pill.astro';
+import type { Meal } from '@/lib/queries/meals';
+import { formatPrice } from '@/lib/pricing';
+
+interface Props {
+  meal: Meal;
+}
+
+const { meal } = Astro.props;
+---
+
+<div class="group flex flex-col bg-[var(--color-surface-elevated)] rounded-[var(--radius-card)] overflow-hidden shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-[var(--duration-base)] ease-[var(--ease-out-soft)]">
+  <div class="relative h-56 w-full bg-[var(--color-surface-sunken)] overflow-hidden">
+    {meal.hero_image_url && (
+      <img 
+        src={meal.hero_image_url} 
+        alt={meal.name} 
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[var(--duration-slow)] ease-[var(--ease-out-soft)]"
+        loading="lazy"
+      />
+    )}
+    <div class="absolute top-4 left-4 flex gap-2">
+      {meal.is_featured && <Pill text="Popular" variant="custom" customColor="var(--color-accent)" />}
+      <Pill text={meal.category} variant="default" />
+    </div>
+  </div>
+  
+  <div class="p-6 flex flex-col flex-1">
+    <div class="flex justify-between items-start mb-2 gap-4">
+      <h3 class="font-[family-name:var(--font-display)] font-semibold text-[20px] text-[var(--color-fg)] leading-tight">{meal.name}</h3>
+      <span class="font-medium text-[16px] text-[var(--color-brand)] whitespace-nowrap">{formatPrice(meal.base_price_cents)}</span>
+    </div>
+    
+    <p class="text-[var(--color-fg-muted)] text-[14px] line-clamp-2 mb-6 flex-1">
+      {meal.description}
+    </p>
+    
+    <div class="flex flex-wrap gap-2 pt-4 border-t border-[var(--color-surface-sunken)]">
+      {meal.calories > 0 && (
+        <Fragment>
+          <Pill text={`${meal.calories} cal`} variant="cal" />
+          <Pill text={`${meal.protein_g}g protein`} variant="protein" />
+          <Pill text={`${meal.carbs_g}g carbs`} variant="carbs" />
+          <Pill text={`${meal.fat_g}g fat`} variant="fat" />
+        </Fragment>
+      )}
+    </div>
+  </div>
+</div>

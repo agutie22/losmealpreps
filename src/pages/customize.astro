@@ -1,0 +1,21 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import CustomBuilder from '@/components/react/builder/CustomBuilder';
+---
+
+<Layout title="Build a Custom Meal | Los Meal Preps" description="Design your own meal — pick your protein, carb, veggies, sauce, and flavors.">
+  <div class="bg-[var(--color-surface-base)] border-b border-[var(--color-surface-sunken)]">
+    <div class="container mx-auto px-4 sm:px-6 py-10 md:py-12 text-center">
+      <h1 class="font-[family-name:var(--font-display)] font-bold text-[36px] sm:text-[44px] md:text-[48px] text-[var(--color-fg)] leading-tight mb-3 md:mb-4">
+        Build Your Custom Meal
+      </h1>
+      <p class="text-[var(--color-fg-muted)] text-[15px] md:text-[16px] max-w-xl mx-auto">
+        Choose your protein, carb, veggies, and sauces. Live macros update as you build.
+      </p>
+      <p class="text-[13px] text-[var(--color-fg-muted)] mt-4 max-w-xl mx-auto">
+        New clients may order a single meal. Returning clients should order at least $60 total or 5 meals.
+      </p>
+    </div>
+  </div>
+  <CustomBuilder client:only="react" />
+</Layout>

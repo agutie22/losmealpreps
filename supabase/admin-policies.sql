@@ -1,2 +1,0 @@
--- Superseded by admin-allowlist-email.sql (single allowlisted admin email).
--- See admin-allowlist-email.sql for current policies.
