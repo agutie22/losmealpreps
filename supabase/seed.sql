@@ -1,6 +1,33 @@
 -- Local dev sample data only — never runs on production (db push skips this file).
 -- Reference data (site_settings, bundles, dietary_tags) lives in 0014_reference_data.sql.
 
+-- Local dev admin user — change the password here as needed, never commit a real production password.
+insert into auth.users (
+  id,
+  instance_id,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  aud,
+  role,
+  created_at,
+  updated_at
+) values (
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000000',
+  'losmealpreps@gmail.com',
+  crypt('localdev', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}',
+  '{}',
+  'authenticated',
+  'authenticated',
+  now(),
+  now()
+) on conflict (id) do update set encrypted_password = excluded.encrypted_password;
+
 insert into ingredients (id, name, type, display_order, calories, protein_g, carbs_g, fat_g, upcharge_cents) values
   ('11000000-0000-0000-0000-000000000000', 'Grilled Chicken Breast', 'protein', 0, 165, 31,  0,    3.6, 0),
   ('12000000-0000-0000-0000-000000000000', 'Grass-fed Steak',        'protein', 1, 250, 26,  0,    15,  0),
