@@ -4,6 +4,7 @@ import type { CartItem } from '@/stores/cartStore';
 export function formatBundleOrder(
   bundleName: string,
   slotCount: number,
+  proteinSizeLabel: string,
   priceCents: number,
   selections: { name: string }[],
 ): string {
@@ -12,7 +13,7 @@ export function formatBundleOrder(
     return acc;
   }, {} as Record<string, number>);
 
-  let message = `Hey Los Meal Preps! I'd like to order the ${bundleName} (${slotCount} meals).\n\nMy selections:\n`;
+  let message = `Hey Los Meal Preps! I'd like to order the ${bundleName} (${slotCount} meals, ${proteinSizeLabel} protein for all).\n\nMy selections:\n`;
   Object.entries(mealCounts).forEach(([name, count]) => {
     message += `- ${count}x ${name}\n`;
   });
@@ -56,13 +57,14 @@ export function formatCustomOrder(d: CustomOrderDetails): string {
   return msg;
 }
 
-export function formatFullOrder(items: CartItem[]): string {
+export function formatFullOrder(items: CartItem[], discountCents: number = 0, finalTotalCents: number = 0): string {
   const mealSummary = new Map<string, { count: number; unitPriceCents: number }>();
   let msg = `Hey Los Meal Preps! I'd like to place this order:\n\n`;
-  let totalCents = 0;
+  let subtotalCents = 0;
 
   const customItems = items.filter((item) => item.kind === 'custom');
   const bundleItems = items.filter((item) => item.kind === 'bundle');
+  const addonItems = items.filter((item) => item.kind === 'addon');
   items.forEach((item) => {
     if (item.kind === 'meal') {
       const current = mealSummary.get(item.meal.name);
@@ -70,14 +72,18 @@ export function formatFullOrder(items: CartItem[]): string {
         count: (current?.count ?? 0) + 1,
         unitPriceCents: item.meal.base_price_cents,
       });
-      totalCents += item.meal.base_price_cents;
+      subtotalCents += item.meal.base_price_cents;
       return;
     }
     if (item.kind === 'bundle') {
-      totalCents += item.bundle.totalCents;
+      subtotalCents += item.bundle.totalCents;
       return;
     }
-    totalCents += item.build.totalCents;
+    if (item.kind === 'addon') {
+      subtotalCents += item.addon.priceCents;
+      return;
+    }
+    subtotalCents += item.build.totalCents;
   });
 
   if (mealSummary.size > 0) {
@@ -119,7 +125,7 @@ export function formatFullOrder(items: CartItem[]): string {
     msg += `Bundles:\n`;
     bundleItems.forEach((item, index) => {
       const bundle = item.bundle;
-      msg += `${index + 1}) ${bundle.bundleName} (${bundle.slotCount} meals)\n`;
+      msg += `${index + 1}) ${bundle.bundleName} (${bundle.slotCount} meals, ${bundle.proteinSizeLabel} protein)\n`;
       const bundleMealCounts = bundle.mealNames.reduce((acc, name) => {
         acc[name] = (acc[name] ?? 0) + 1;
         return acc;
@@ -132,7 +138,21 @@ export function formatFullOrder(items: CartItem[]): string {
     msg += '\n';
   }
 
-  msg += `Order total: ${formatPrice(totalCents)}\n\n`;
+  if (addonItems.length > 0) {
+    msg += `Add-ons:\n`;
+    addonItems.forEach((item) => {
+      msg += `- ${item.addon.name} (${formatPrice(item.addon.priceCents)})\n`;
+    });
+    msg += '\n';
+  }
+
+  if (discountCents > 0) {
+    msg += `Subtotal: ${formatPrice(subtotalCents)}\n`;
+    msg += `Sauce Promo Discount: -${formatPrice(discountCents)}\n`;
+  }
+
+  const displayTotal = finalTotalCents || subtotalCents;
+  msg += `Order total: ${formatPrice(displayTotal)}\n\n`;
   msg += `Let me know how to proceed with payment!`;
   return msg;
 }

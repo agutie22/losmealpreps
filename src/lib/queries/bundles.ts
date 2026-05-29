@@ -1,3 +1,1 @@
-import type { Database } from '@/types/database.types';
-
-export type Bundle = Database['public']['Tables']['bundles']['Row'];
+export type { Bundle, BundleWithOptions, BundleSlotOption, BundleProteinSize } from '@/lib/bundles';

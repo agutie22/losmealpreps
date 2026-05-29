@@ -31,9 +31,14 @@ function MealCard({ meal }: { meal: Meal }) {
     window.setTimeout(() => setJustAdded(false), 2000);
   };
 
+  const detailHref = `/meals/${meal.slug}`;
+
   return (
     <div className="group flex flex-col bg-[var(--color-surface-elevated)] rounded-[var(--radius-card)] overflow-hidden shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-[var(--duration-base)]">
-      <div className="relative h-32 sm:h-56 w-full bg-[var(--color-surface-sunken)] overflow-hidden">
+      <a
+        href={detailHref}
+        className="relative block h-32 sm:h-56 w-full bg-[var(--color-surface-sunken)] overflow-hidden"
+      >
         {meal.hero_image_url && (
           <img
             src={meal.hero_image_url}
@@ -42,7 +47,7 @@ function MealCard({ meal }: { meal: Meal }) {
             loading="lazy"
           />
         )}
-        <div className="absolute top-4 left-4 flex gap-2">
+        <div className="absolute top-4 left-4 flex gap-2 pointer-events-none">
           {meal.is_featured && (
             <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[var(--color-accent)] text-white">
               Popular
@@ -52,19 +57,27 @@ function MealCard({ meal }: { meal: Meal }) {
             {meal.category}
           </span>
         </div>
-      </div>
+      </a>
       <div className="p-3 sm:p-6 flex flex-col flex-1">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-1.5 sm:gap-4">
           <h3 className="font-[family-name:var(--font-display)] font-semibold text-[16px] sm:text-[20px] text-[var(--color-fg)] leading-tight">
-            {meal.name}
+            <a href={detailHref} className="hover:text-[var(--color-brand)] transition-colors">
+              {meal.name}
+            </a>
           </h3>
           <span className="font-medium text-[14px] sm:text-[16px] text-[var(--color-brand)] whitespace-nowrap">
             {formatPrice(meal.base_price_cents)}
           </span>
         </div>
-        <p className="text-[var(--color-fg-muted)] text-[12px] sm:text-[14px] line-clamp-2 sm:line-clamp-2 mb-4 sm:mb-6 flex-1">
+        <p className="text-[var(--color-fg-muted)] text-[12px] sm:text-[14px] line-clamp-2 mb-2 flex-1">
           {meal.description}
         </p>
+        <a
+          href={detailHref}
+          className="inline-flex items-center min-h-[36px] text-[12px] sm:text-[13px] font-medium text-[var(--color-brand)] hover:underline mb-3 sm:mb-6 -mt-0.5"
+        >
+          View details
+        </a>
         {meal.calories > 0 && (
           <div className="flex flex-wrap gap-1 sm:gap-2 pt-2.5 sm:pt-4 border-t border-[var(--color-surface-sunken)]">
             <Pill text={`${meal.calories} cal`} color={MACRO_COLORS.cal} />
@@ -95,8 +108,8 @@ function MealCard({ meal }: { meal: Meal }) {
 function SkeletonCard() {
   return (
     <div className="flex flex-col bg-[var(--color-surface-elevated)] rounded-[var(--radius-card)] overflow-hidden shadow-[var(--shadow-card)] animate-pulse">
-      <div className="h-56 bg-[var(--color-surface-sunken)]" />
-      <div className="p-6 space-y-3">
+      <div className="h-32 sm:h-56 bg-[var(--color-surface-sunken)]" />
+      <div className="p-3 sm:p-6 space-y-3">
         <div className="h-5 bg-[var(--color-surface-sunken)] rounded w-3/4" />
         <div className="h-4 bg-[var(--color-surface-sunken)] rounded w-full" />
         <div className="h-4 bg-[var(--color-surface-sunken)] rounded w-2/3" />

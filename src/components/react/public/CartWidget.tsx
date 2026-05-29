@@ -4,9 +4,12 @@ import { useCartStore } from '@/stores/cartStore';
 import { formatPrice } from '@/lib/pricing';
 import { formatFullOrder } from '@/lib/format-order';
 import { repriceCartItems } from '@/lib/reprice-cart';
+import { parseSauceConfig, calculateCartTotals } from '@/lib/cart-math';
+import CartAddonsUpsell from './CartAddonsUpsell';
 
 interface Props {
   igHandle: string;
+  saucePricingConfigRaw?: string | null;
 }
 
 interface ToastState {
@@ -15,7 +18,7 @@ interface ToastState {
   tone: 'success' | 'warning' | 'error';
 }
 
-export default function CartWidget({ igHandle }: Props) {
+export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
   const { items, removeItem, clearItems, replaceItems } = useCartStore();
   const [open, setOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -23,14 +26,11 @@ export default function CartWidget({ igHandle }: Props) {
   const [toast, setToast] = useState<ToastState | null>(null);
   const [redirecting, setRedirecting] = useState(false);
 
-  const totalCents = useMemo(
-    () =>
-      items.reduce((sum, item) => {
-        if (item.kind === 'meal') return sum + item.meal.base_price_cents;
-        if (item.kind === 'bundle') return sum + item.bundle.totalCents;
-        return sum + item.build.totalCents;
-      }, 0),
-    [items],
+  const sauceConfig = useMemo(() => parseSauceConfig(saucePricingConfigRaw), [saucePricingConfigRaw]);
+
+  const { totalCents, discountCents, subtotalCents } = useMemo(
+    () => calculateCartTotals(items, sauceConfig),
+    [items, sauceConfig]
   );
 
   const itemCount = items.length;
@@ -61,8 +61,13 @@ export default function CartWidget({ igHandle }: Props) {
 
   useEffect(() => {
     const closeForMenuOpen = () => setOpen(false);
+    const openCart = () => setOpen(true);
     window.addEventListener('mobile-menu:open', closeForMenuOpen);
-    return () => window.removeEventListener('mobile-menu:open', closeForMenuOpen);
+    window.addEventListener('cart:open:request', openCart);
+    return () => {
+      window.removeEventListener('mobile-menu:open', closeForMenuOpen);
+      window.removeEventListener('cart:open:request', openCart);
+    };
   }, []);
 
   useEffect(() => {
@@ -78,6 +83,7 @@ export default function CartWidget({ igHandle }: Props) {
 
   const handleSendOrder = async () => {
     if (items.length === 0) return;
+
     let latestItems = items;
     let priceWasUpdated = false;
     try {
@@ -93,7 +99,8 @@ export default function CartWidget({ igHandle }: Props) {
       });
     }
 
-    const orderText = formatFullOrder(latestItems);
+    const orderText = formatFullOrder(latestItems, discountCents, totalCents);
+
     try {
       await navigator.clipboard.writeText(orderText);
       setToast({
@@ -113,7 +120,7 @@ export default function CartWidget({ igHandle }: Props) {
     } catch {
       setToast({
         title: 'Clipboard blocked',
-        message: 'Could not copy automatically. Please copy and paste manually.',
+        message: 'Could not copy automatically. Please copy your order from the cart and paste it in Instagram.',
         tone: 'error',
       });
     }
@@ -202,7 +209,9 @@ export default function CartWidget({ igHandle }: Props) {
                         ) : item.kind === 'bundle' ? (
                           <>
                             <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">{item.bundle.bundleName}</p>
-                            <p className="text-[12px] text-[var(--color-fg-muted)]">Bundle · {item.bundle.slotCount} meals</p>
+                            <p className="text-[12px] text-[var(--color-fg-muted)]">
+                              Bundle · {item.bundle.slotCount} meals · {item.bundle.proteinSizeLabel} protein
+                            </p>
                             <p className="text-[12px] text-[var(--color-fg-muted)] mt-1 break-words">
                               {Object.entries(
                                 item.bundle.mealNames.reduce((acc, name) => {
@@ -220,7 +229,7 @@ export default function CartWidget({ igHandle }: Props) {
                               {formatPrice(item.bundle.totalCents)}
                             </p>
                           </>
-                        ) : (
+                        ) : item.kind === 'custom' ? (
                           <>
                             <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">
                               {item.build.proteinName}{item.build.proteinSize ? ` (${item.build.proteinSize})` : ''}
@@ -231,6 +240,16 @@ export default function CartWidget({ igHandle }: Props) {
                             </p>
                             <p className="text-[12px] text-[var(--color-brand)] mt-1">
                               {formatPrice(item.build.totalCents)}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">
+                              {item.addon.name}
+                            </p>
+                            <p className="text-[12px] text-[var(--color-fg-muted)]">Add-on</p>
+                            <p className="text-[12px] text-[var(--color-brand)] mt-1">
+                              {formatPrice(item.addon.priceCents)}
                             </p>
                           </>
                         )}
@@ -246,6 +265,8 @@ export default function CartWidget({ igHandle }: Props) {
                   </div>
                 ))
               )}
+              
+              <CartAddonsUpsell />
             </div>
 
             <div
@@ -253,7 +274,21 @@ export default function CartWidget({ igHandle }: Props) {
               style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
             >
               <div className="flex justify-between items-center">
-                <span className="text-[14px] text-[var(--color-fg-muted)]">Total</span>
+                <span className="text-[14px] text-[var(--color-fg-muted)]">Subtotal</span>
+                <span className="text-[16px] font-medium text-[var(--color-fg)]">
+                  {formatPrice(subtotalCents)}
+                </span>
+              </div>
+              {discountCents > 0 && (
+                <div className="flex justify-between items-center text-emerald-600">
+                  <span className="text-[14px]">Sauce Promo Discount</span>
+                  <span className="text-[16px] font-medium">
+                    -{formatPrice(discountCents)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center pt-2 border-t border-[var(--color-surface-sunken)]">
+                <span className="text-[14px] font-bold text-[var(--color-fg)]">Total</span>
                 <span className="text-[24px] font-[family-name:var(--font-display)] font-bold text-[var(--color-brand)]">
                   {formatPrice(totalCents)}
                 </span>

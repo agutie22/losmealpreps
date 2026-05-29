@@ -1,0 +1,104 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Pill from '@/components/astro/Pill.astro';
+import AddMealButton from '@/components/react/public/AddMealButton';
+import { getActiveMeals, type Meal } from '@/lib/queries/meals';
+import { formatPrice } from '@/lib/pricing';
+
+export async function getStaticPaths() {
+  const meals = await getActiveMeals();
+  return meals.map((meal) => ({
+    params: { slug: meal.slug },
+    props: { meal },
+  }));
+}
+
+interface Props {
+  meal: Meal;
+}
+
+const { meal } = Astro.props;
+
+const metaDescription =
+  meal.description.length > 160
+    ? `${meal.description.slice(0, 157)}…`
+    : meal.description;
+---
+
+<Layout
+  title={`${meal.name} | Los Meal Preps`}
+  description={metaDescription}
+  image={meal.hero_image_url}
+>
+  <article class="bg-[var(--color-surface-base)] pb-4 sm:pb-0">
+    <div class="sticky top-[72px] z-30 border-b border-[var(--color-surface-sunken)] bg-[var(--color-surface-base)]/95 backdrop-blur-md sm:static sm:border-none sm:bg-transparent sm:backdrop-blur-none">
+      <div class="container mx-auto px-5 sm:px-6 max-w-3xl">
+        <a
+          href="/#menu"
+          class="inline-flex items-center gap-1.5 min-h-[44px] py-2 text-[14px] font-medium text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] active:text-[var(--color-brand)] transition-colors"
+        >
+          ← Back to menu
+        </a>
+      </div>
+    </div>
+
+    {meal.hero_image_url && (
+      <div class="relative w-full bg-[var(--color-surface-sunken)]">
+        <img
+          src={meal.hero_image_url}
+          alt={meal.name}
+          class="w-full aspect-[4/3] sm:aspect-[16/9] sm:max-h-[70vh] object-cover object-center"
+          loading="eager"
+        />
+        <div class="absolute bottom-3 left-3 right-3 sm:bottom-auto sm:top-6 sm:left-6 sm:right-auto flex flex-wrap gap-2">
+          {meal.is_featured && (
+            <Pill text="Popular" variant="custom" customColor="var(--color-accent)" />
+          )}
+          <Pill text={meal.category} variant="default" />
+        </div>
+      </div>
+    )}
+
+    <div class="container mx-auto px-5 sm:px-6 pt-5 sm:pt-8 md:pt-10 max-w-3xl">
+      <header class="mb-6 sm:mb-8">
+        <div class="flex items-start justify-between gap-4 mb-3 sm:mb-4">
+          <h1 class="font-[family-name:var(--font-display)] font-bold text-[26px] sm:text-[36px] text-[var(--color-fg)] leading-[1.15] min-w-0">
+            {meal.name}
+          </h1>
+          <span class="font-semibold text-[20px] sm:text-[24px] text-[var(--color-brand)] whitespace-nowrap pt-0.5 sm:pt-1 flex-shrink-0">
+            {formatPrice(meal.base_price_cents)}
+          </span>
+        </div>
+        {!meal.hero_image_url && (
+          <div class="flex flex-wrap gap-2 mb-4">
+            {meal.is_featured && (
+              <Pill text="Popular" variant="custom" customColor="var(--color-accent)" />
+            )}
+            <Pill text={meal.category} variant="default" />
+          </div>
+        )}
+        <p class="text-[var(--color-fg-muted)] text-[15px] sm:text-[17px] leading-[1.65]">
+          {meal.description}
+        </p>
+      </header>
+
+      {meal.calories > 0 && (
+        <section class="mb-6 sm:mb-10 p-4 sm:p-0 rounded-[var(--radius-card)] bg-[var(--color-surface-elevated)] sm:bg-transparent border border-[var(--color-surface-sunken)] sm:border-none">
+          <h2 class="font-[family-name:var(--font-display)] font-semibold text-[16px] sm:text-[18px] text-[var(--color-fg)] mb-3">
+            Nutrition
+          </h2>
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+            <Pill text={`${meal.calories} cal`} variant="cal" />
+            <Pill text={`${meal.protein_g}g protein`} variant="protein" />
+            <Pill text={`${meal.carbs_g}g carbs`} variant="carbs" />
+            <Pill text={`${meal.fat_g}g fat`} variant="fat" />
+          </div>
+        </section>
+      )}
+    </div>
+
+    <div class="container mx-auto px-5 sm:px-6 max-w-3xl">
+      <AddMealButton client:load meal={meal} />
+    </div>
+  </article>
+</Layout>

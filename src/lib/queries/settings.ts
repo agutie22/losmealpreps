@@ -1,9 +1,14 @@
 import { buildClient } from '../supabase/build';
 
-const SETTINGS_DEFAULTS: Record<string, string> = {
+export const SETTINGS_DEFAULTS: Record<string, string> = {
   instagram_handle: 'losmealpreps',
   tagline: 'Premium meal prep, macro-tracked and ready for pickup.',
   contact_email: 'losmealpreps@gmail.com',
+  sauce_pricing_config: JSON.stringify({
+    single_price_cents: 150,
+    pair_price_cents: 250,
+    free_threshold_cents: 6000,
+  }),
 };
 
 export async function getSiteSettings() {

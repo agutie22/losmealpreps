@@ -2,17 +2,28 @@ import { supabase } from '@/lib/supabase/client';
 import { priceCustomMeal } from '@/lib/pricing';
 import type { CartItem } from '@/stores/cartStore';
 import type { Database } from '@/types/database.types';
+import type { BundleWithOptions, BundleWithOptionsRow } from '@/lib/bundles';
+import { getBundlePrice, getSlotOptionByCount, mapBundleWithOptions } from '@/lib/bundles';
 
 type MealRow = Database['public']['Tables']['meals']['Row'];
-type BundleRow = Database['public']['Tables']['bundles']['Row'];
 type IngredientRow = Database['public']['Tables']['ingredients']['Row'];
 type IngredientVariantRow = Database['public']['Tables']['ingredient_variants']['Row'];
+
+function resolveBundlePrice(
+  bundle: BundleWithOptions,
+  slotCount: number,
+  proteinSizeLabel: string,
+): number | null {
+  const slot = getSlotOptionByCount(bundle, slotCount);
+  if (!slot) return null;
+  return getBundlePrice(slot, proteinSizeLabel);
+}
 
 export async function repriceCartItems(items: CartItem[]): Promise<{ items: CartItem[]; hadPriceChanges: boolean }> {
   if (items.length === 0) return { items, hadPriceChanges: false };
 
   const mealIds = [...new Set(items.filter((i) => i.kind === 'meal').map((i) => i.meal.id))];
-  const bundleIds = [...new Set(items.filter((i) => i.kind === 'bundle').map((i) => i.bundle.bundleId).filter(Boolean))] as string[];
+  const bundleIds = [...new Set(items.filter((i) => i.kind === 'bundle').map((i) => i.bundle.bundleId))];
 
   const ingredientIds = new Set<string>();
   const variantIds = new Set<string>();
@@ -33,8 +44,11 @@ export async function repriceCartItems(items: CartItem[]): Promise<{ items: Cart
       ? supabase.from('meals').select('*').in('id', mealIds)
       : Promise.resolve({ data: [] as MealRow[], error: null }),
     bundleIds.length > 0
-      ? supabase.from('bundles').select('*').in('id', bundleIds)
-      : Promise.resolve({ data: [] as BundleRow[], error: null }),
+      ? supabase
+          .from('bundles')
+          .select('*, bundle_slot_options(*, bundle_protein_sizes(*))')
+          .in('id', bundleIds)
+      : Promise.resolve({ data: [] as BundleWithOptionsRow[], error: null }),
     ingredientIds.size > 0
       ? supabase.from('ingredients').select('*').in('id', [...ingredientIds])
       : Promise.resolve({ data: [] as IngredientRow[], error: null }),
@@ -49,7 +63,9 @@ export async function repriceCartItems(items: CartItem[]): Promise<{ items: Cart
   if (variantsRes.error) throw variantsRes.error;
 
   const mealById = new Map((mealsRes.data ?? []).map((m) => [m.id, m]));
-  const bundleById = new Map((bundlesRes.data ?? []).map((b) => [b.id, b]));
+  const bundleById = new Map(
+    (bundlesRes.data ?? []).map((b) => [b.id, mapBundleWithOptions(b as BundleWithOptionsRow)]),
+  );
   const ingredientById = new Map((ingredientsRes.data ?? []).map((i) => [i.id, i]));
   const variantById = new Map((variantsRes.data ?? []).map((v) => [v.id, v]));
 
@@ -63,11 +79,13 @@ export async function repriceCartItems(items: CartItem[]): Promise<{ items: Cart
     }
 
     if (item.kind === 'bundle') {
-      if (!item.bundle.bundleId) return item;
       const latest = bundleById.get(item.bundle.bundleId);
       if (!latest) return item;
-      if (latest.base_price_cents !== item.bundle.totalCents) hadPriceChanges = true;
-      return { ...item, bundle: { ...item.bundle, totalCents: latest.base_price_cents } };
+      const newTotal =
+        resolveBundlePrice(latest, item.bundle.slotCount, item.bundle.proteinSizeLabel) ??
+        item.bundle.totalCents;
+      if (newTotal !== item.bundle.totalCents) hadPriceChanges = true;
+      return { ...item, bundle: { ...item.bundle, totalCents: newTotal } };
     }
 
     if (!item.build.selection) return item;

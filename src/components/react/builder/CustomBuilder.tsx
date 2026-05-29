@@ -79,7 +79,6 @@ function CustomBuilderInner({
   const [flavorId, setFlavorId] = useState<string | null>(null);
   const [sideSauceId, setSideSauceId] = useState<string | null>(null);
   const [sideSauceVarId, setSideSauceVarId] = useState<string | null>(null);
-  const [justAdded, setJustAdded] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const protein = useMemo(
@@ -223,8 +222,7 @@ function CustomBuilderInner({
     });
     resetBuilder();
     setCurrentStepIndex(0);
-    setJustAdded(true);
-    window.setTimeout(() => setJustAdded(false), 2500);
+    window.dispatchEvent(new CustomEvent('cart:open:request'));
   };
 
   const safeStepIndex = Math.min(currentStepIndex, Math.max(0, steps.length - 1));
@@ -463,11 +461,6 @@ function CustomBuilderInner({
               </div>
             </section>
 
-            {justAdded && (
-              <p className="lg:hidden text-[12px] text-[var(--color-brand)] text-center font-medium -mt-4">
-                Added to cart.
-              </p>
-            )}
           </div>
 
           {/* Right: sticky summary */}
@@ -547,11 +540,6 @@ function CustomBuilderInner({
                 <p className="text-[11px] text-[var(--color-fg-subtle)] text-center mt-3">
                   Add multiple custom meals, then send one order from your cart.
                 </p>
-                {justAdded && (
-                  <p className="text-[11px] text-[var(--color-brand)] text-center mt-2 font-medium">
-                    Added to cart.
-                  </p>
-                )}
               </div>
             </div>
           </div>

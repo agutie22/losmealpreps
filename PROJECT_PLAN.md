@@ -117,7 +117,7 @@ supabase/
 | `ingredients` | Custom-line ingredient library | `type` CHECK lacks `flavor`, no variants — see delta |
 | `meal_default_ingredients` | join (old swap model) | **Dead in two-system model** |
 | `meal_swap_options` | join (old swap model) | **Dead in two-system model** |
-| `bundles` | Signature bundles | Works as-is — leave alone |
+| `bundles` | Signature bundles (staple / weekly) | **Redesigned in `0015`** — slot options + protein sizes |
 | `dietary_tags` | Filter chips | Works as-is |
 | `meal_dietary_tags` | join | Works as-is |
 | `site_settings` | key/value config | Works as-is |
@@ -127,7 +127,7 @@ supabase/
 
 `ingredients` columns: `id, name, type (CHECK protein/carb/veggie/sauce), image_url, calories, protein_g, carbs_g, fat_g, upcharge_cents, is_active, created_at`.
 
-`bundles` columns: `id, tier (CHECK standard/premium), display_name, tagline, slot_count, base_price_cents, per_slot_savings_cents, hero_image_url, is_active`.
+`bundles` columns: `id, slug, meal_type (staple/weekly), display_name, tagline, hero_image_url, is_active`. Child tables: `bundle_slot_options` (configurable slot counts + optional `label`), `bundle_protein_sizes` (protein size labels + `price_cents`).
 
 **RLS:** enabled on all tables; public `SELECT` on active rows; admin writes gated by `is_admin(auth.jwt()->>'email')` against an allowlist of `admin@example.com, hello@losmealpreps.com, alex@losmealpreps.com`.
 
@@ -140,7 +140,7 @@ The two-system model needs these changes. They are **additive** — the existing
 - **`0008` (cleanup, low priority) — Drop `meal_default_ingredients` and `meal_swap_options`.** Genuinely dead in the two-system model — signature meals store their own macros, the custom line picks freely. Safe to drop, but not urgent; leave them if unsure.
 - **Admin allowlist** — remove `admin@example.com` from `is_admin()` (Gap A).
 
-`bundles` is **not** redesigned — `slot_count` already means "how many signature meals," `base_price_cents` is the flat price. It works. Leave it.
+**`0015` — Bundle options.** Staple vs weekly bundle products; admin-configurable slot counts and protein sizes (e.g. 4/6/8 oz) with per-combination pricing. Customer picks one size for the entire bundle.
 
 ---
 
@@ -201,8 +201,8 @@ This replaces the old build-phase plan. Each gap states what exists, what's miss
 > None of this exists. It is genuinely new — not a reconciliation.
 
 - **D1. Migration `0007`** — `ingredient_variants`, `custom_meal_config`, `flavor` type, RLS (see §4.2 and `ADMIN_BUILD.md` §3).
-- **D2. Ingredient Library admin module** — type-aware editor with the protein/sauce variant sub-forms. `ADMIN_BUILD.md` §5.
-- **D3. Custom Meal Config admin module** — single-record editor. `ADMIN_BUILD.md` §5.
+- **D2. Manage Ingredients** — type-aware editor with the protein/sauce variant sub-forms. `ADMIN_BUILD.md` §5.2.
+- **D3. Manage Custom Meals** — builder settings (`custom_meal_config`, e.g. max veggies). `ADMIN_BUILD.md` §5.3.
 - **D4. Custom builder page + island** — new route (e.g. `/customize`), build-time fetch of the ingredient library, React island for live selection with live macros (`lib/macros.ts`) and live price (`lib/pricing.ts`). `ADMIN_BUILD.md` §6.
 - **D5. Instagram handoff for custom orders** — `format-order.ts` gains a custom-meal formatter.
 

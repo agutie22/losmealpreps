@@ -1,61 +1,73 @@
 import React, { useEffect, useState } from 'react';
 import { useCartStore } from '@/stores/cartStore';
-import type { Bundle } from '@/lib/queries/bundles';
+import type { BundleWithOptions } from '@/lib/bundles';
 import { formatPrice } from '@/lib/pricing';
 
 interface OrderSummaryProps {
-  bundle: Bundle;
+  bundle: BundleWithOptions;
 }
 
 export default function OrderSummary({ bundle }: OrderSummaryProps) {
-  const { slots, addBundleItem, clearCart } = useCartStore();
+  const {
+    slots,
+    activeSlotCount,
+    selectedProteinSize,
+    addBundleItem,
+    clearBuilderSlots,
+  } = useCartStore();
   const [isClient, setIsClient] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    if (!toastMessage) return;
-    const timer = window.setTimeout(() => setToastMessage(null), 2800);
-    return () => window.clearTimeout(timer);
-  }, [toastMessage]);
+  const filledSlots = slots.filter((s) => s !== null);
+  const isComplete =
+    selectedProteinSize != null &&
+    activeSlotCount != null &&
+    filledSlots.length === slots.length &&
+    slots.length > 0;
 
-  const filledSlots = slots.filter(s => s !== null);
-  const isComplete = filledSlots.length === slots.length;
+  const totalCents = selectedProteinSize?.priceCents ?? 0;
 
   const handleAddBundleToCart = () => {
-    if (!isComplete) return;
+    if (!isComplete || !selectedProteinSize || activeSlotCount == null) return;
     addBundleItem({
       bundleId: bundle.id,
       bundleName: bundle.display_name,
-      slotCount: slots.length,
-      totalCents: bundle.base_price_cents,
+      mealType: bundle.meal_type as 'staple' | 'weekly',
+      slotCount: activeSlotCount,
+      proteinSizeLabel: selectedProteinSize.label,
+      totalCents,
       mealNames: filledSlots.map((meal) => meal.name),
     });
-    clearCart();
-    setToastMessage('Bundle added to cart. Keep shopping or send from your cart.');
+    clearBuilderSlots();
+    window.dispatchEvent(new CustomEvent('cart:open:request'));
   };
 
   if (!isClient) return null;
 
   return (
     <div>
+      {selectedProteinSize && (
+        <p className="text-[13px] text-[var(--color-fg-muted)] mb-3">
+          {activeSlotCount} meals · {selectedProteinSize.label} protein (all meals)
+        </p>
+      )}
       <div className="flex justify-between items-center mb-4">
         <span className="text-[16px] font-bold text-[var(--color-fg)]">Total</span>
         <span className="text-[24px] font-[family-name:var(--font-display)] font-bold text-[var(--color-brand)]">
-          {formatPrice(bundle.base_price_cents)}
+          {selectedProteinSize ? formatPrice(totalCents) : '—'}
         </span>
       </div>
-      
+
       <button
         onClick={handleAddBundleToCart}
         disabled={!isComplete}
         className={`w-full py-4 rounded-[var(--radius-pill)] font-semibold text-[16px] transition-colors flex items-center justify-center gap-2 ${
           isComplete
-            ? 'bg-[var(--color-brand)] text-[var(--color-surface-elevated)] hover:bg-[var(--color-brand-hover)] shadow-md cursor-pointer' 
+            ? 'bg-[var(--color-brand)] text-[var(--color-surface-elevated)] hover:bg-[var(--color-brand-hover)] shadow-md cursor-pointer'
             : 'bg-[var(--color-surface-sunken)] text-[var(--color-fg-subtle)] cursor-not-allowed'
         }`}
       >
@@ -65,24 +77,16 @@ export default function OrderSummary({ bundle }: OrderSummaryProps) {
             Add Bundle to Cart
           </>
         ) : (
-          `Select ${slots.length - filledSlots.length} more meals`
+          !selectedProteinSize
+            ? 'Choose meal count and protein size'
+            : `Select ${slots.length - filledSlots.length} more meals`
         )}
       </button>
-      
+
       {isComplete && (
         <p className="text-center text-[12px] text-[var(--color-fg-muted)] mt-3">
           Add your bundle, then send your full order from the cart.
         </p>
-      )}
-
-      {toastMessage && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-[360px] z-[140] rounded-[var(--radius-card)] border border-[var(--color-surface-sunken)] bg-[var(--color-surface-elevated)] px-4 py-3 text-[13px] text-[var(--color-fg)] shadow-[var(--shadow-rail)]"
-        >
-          {toastMessage}
-        </div>
       )}
     </div>
   );

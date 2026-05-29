@@ -2,8 +2,12 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Database } from '@/types/database.types';
 
-export type BundleTier = 'standard' | 'premium';
 export type Meal = Database['public']['Tables']['meals']['Row'];
+
+export interface SelectedProteinSize {
+  label: string;
+  priceCents: number;
+}
 
 export interface CustomBuildSummary {
   proteinName: string;
@@ -31,9 +35,11 @@ export interface CustomBuildSummary {
 }
 
 export interface BundleCartSummary {
-  bundleId?: string;
+  bundleId: string;
   bundleName: string;
+  mealType: 'staple' | 'weekly';
   slotCount: number;
+  proteinSizeLabel: string;
   totalCents: number;
   mealNames: string[];
 }
@@ -41,22 +47,30 @@ export interface BundleCartSummary {
 export type CartItem =
   | { kind: 'meal';   cartId: string; meal: Meal }
   | { kind: 'custom'; cartId: string; build: CustomBuildSummary }
-  | { kind: 'bundle'; cartId: string; bundle: BundleCartSummary };
+  | { kind: 'bundle'; cartId: string; bundle: BundleCartSummary }
+  | { kind: 'addon';  cartId: string; addon: { id: string; name: string; priceCents: number } };
 
 interface CartState {
-  // Bundle builder (existing)
-  activeTier: BundleTier | null;
+  activeBundleId: string | null;
+  activeSlotCount: number | null;
+  selectedProteinSize: SelectedProteinSize | null;
   slots: (Meal | null)[];
-  setTier: (tier: BundleTier, maxSlots: number) => void;
+  setBundleConfig: (
+    bundleId: string,
+    slotCount: number,
+    proteinSize?: SelectedProteinSize | null,
+    options?: { preserveMeals?: boolean },
+  ) => void;
+  setProteinSize: (size: SelectedProteinSize) => void;
   addMeal: (meal: Meal) => void;
   removeMeal: (index: number) => void;
-  clearCart: () => void;
+  clearBuilderSlots: () => void;
 
-  // Individual items (meals + custom builds)
   items: CartItem[];
   addMealItem: (meal: Meal) => void;
   addCustomItem: (build: CustomBuildSummary) => void;
   addBundleItem: (bundle: BundleCartSummary) => void;
+  addAddonItem: (addon: { id: string; name: string; priceCents: number }) => void;
   replaceItems: (items: CartItem[]) => void;
   removeItem: (cartId: string) => void;
   clearItems: () => void;
@@ -65,22 +79,46 @@ interface CartState {
 export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
-      activeTier: null,
+      activeBundleId: null,
+      activeSlotCount: null,
+      selectedProteinSize: null,
       slots: [],
       items: [],
 
-      setTier: (tier, maxSlots) => set((state) => {
-        if (state.activeTier === tier && state.slots.length === maxSlots) return state;
-        const newSlots = new Array(maxSlots).fill(null);
-        const existingMeals = state.slots.filter((m) => m !== null);
-        for (let i = 0; i < Math.min(existingMeals.length, maxSlots); i++) {
-          newSlots[i] = existingMeals[i];
+      setBundleConfig: (bundleId, slotCount, proteinSize = null, options) => set((state) => {
+        const sameBundle = state.activeBundleId === bundleId;
+        const sameSlots = state.activeSlotCount === slotCount;
+        const sameSize =
+          (state.selectedProteinSize?.label ?? null) === (proteinSize?.label ?? null);
+
+        if (sameBundle && sameSlots && sameSize && state.slots.length === slotCount) {
+          return state;
         }
-        return { activeTier: tier, slots: newSlots };
+
+        const preserveMeals = options?.preserveMeals ?? false;
+        const newSlots = new Array(slotCount).fill(null) as (Meal | null)[];
+        if (preserveMeals && sameBundle) {
+          const existingMeals = state.slots.filter((m) => m !== null);
+          for (let i = 0; i < Math.min(existingMeals.length, slotCount); i++) {
+            newSlots[i] = existingMeals[i];
+          }
+        }
+
+        return {
+          activeBundleId: bundleId,
+          activeSlotCount: slotCount,
+          selectedProteinSize: proteinSize,
+          slots: newSlots,
+        };
       }),
 
+      setProteinSize: (size) => set((state) => ({
+        selectedProteinSize: size,
+        slots: new Array(state.slots.length).fill(null),
+      })),
+
       addMeal: (meal) => set((state) => {
-        if (!state.activeTier) return state;
+        if (!state.activeBundleId || !state.selectedProteinSize) return state;
         const emptyIndex = state.slots.findIndex((m) => m === null);
         if (emptyIndex === -1) return state;
         const newSlots = [...state.slots];
@@ -90,12 +128,14 @@ export const useCartStore = create<CartState>()(
 
       removeMeal: (index) => set((state) => {
         const meals = state.slots.filter((_, i) => i !== index && state.slots[i] !== null);
-        const compressedSlots = new Array(state.slots.length).fill(null);
+        const compressedSlots = new Array(state.slots.length).fill(null) as (Meal | null)[];
         meals.forEach((m, i) => { compressedSlots[i] = m; });
         return { slots: compressedSlots };
       }),
 
-      clearCart: () => set((state) => ({ slots: new Array(state.slots.length).fill(null) })),
+      clearBuilderSlots: () => set((state) => ({
+        slots: new Array(state.slots.length).fill(null),
+      })),
 
       addMealItem: (meal) => set((state) => ({
         items: [...state.items, { kind: 'meal', cartId: crypto.randomUUID(), meal }],
@@ -109,6 +149,10 @@ export const useCartStore = create<CartState>()(
         items: [...state.items, { kind: 'bundle', cartId: crypto.randomUUID(), bundle }],
       })),
 
+      addAddonItem: (addon) => set((state) => ({
+        items: [...state.items, { kind: 'addon', cartId: crypto.randomUUID(), addon }],
+      })),
+
       replaceItems: (items) => set({ items }),
 
       removeItem: (cartId) => set((state) => ({
@@ -117,6 +161,6 @@ export const useCartStore = create<CartState>()(
 
       clearItems: () => set({ items: [] }),
     }),
-    { name: 'los-meal-preps-cart' },
+    { name: 'los-meal-preps-cart-v2' },
   ),
 );

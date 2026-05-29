@@ -160,9 +160,9 @@ function SortableRow({
     <tr
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
-      className="hover:bg-[var(--color-surface-base)]/50 transition-colors"
+      className="block md:table-row bg-[var(--color-surface-elevated)] md:bg-transparent border border-[var(--color-surface-sunken)] md:border-none rounded-[var(--radius-card)] md:rounded-none mb-4 md:mb-0 p-4 md:p-0 hover:bg-[var(--color-surface-base)]/50 transition-colors relative"
     >
-      <td className="p-3 w-8">
+      <td className="block md:table-cell md:p-3 md:w-8 absolute top-4 right-4 md:relative md:top-auto md:right-auto">
         <button
           {...attributes}
           {...listeners}
@@ -172,15 +172,16 @@ function SortableRow({
           <GripIcon />
         </button>
       </td>
-      <td className="p-4 font-medium text-[var(--color-fg)]">
+      <td className="block md:table-cell md:p-4 font-bold md:font-medium text-[16px] md:text-[14px] text-[var(--color-fg)] mb-2 md:mb-0 pr-8 md:pr-0">
         {ing.name}
         {ing.variants.length > 0 && (
-          <span className="ml-2 text-[11px] text-[var(--color-fg-subtle)]">
+          <span className="block md:inline-block md:ml-2 text-[12px] md:text-[11px] text-[var(--color-fg-subtle)] mt-1 md:mt-0">
             {ing.variants.map(v => v.size_label).join(' · ')}
           </span>
         )}
       </td>
-      <td className="p-4 text-center">
+      <td className="flex justify-between items-center md:table-cell md:p-4 md:text-center mb-4 md:mb-0">
+        <span className="md:hidden font-medium text-[var(--color-fg)] text-[13px]">Visible</span>
         <input
           type="checkbox"
           checked={ing.is_active}
@@ -188,8 +189,8 @@ function SortableRow({
           className="w-4 h-4 rounded cursor-pointer accent-[var(--color-brand)]"
         />
       </td>
-      <td className="p-4 text-center">
-        <div className="flex items-center justify-center gap-2">
+      <td className="block md:table-cell md:p-4 md:text-center pt-3 border-t border-[var(--color-surface-sunken)] md:border-none md:pt-0">
+        <div className="flex items-center justify-end md:justify-center gap-2 w-full">
           <button onClick={onEdit}   className="px-3 py-1 text-[12px] font-medium rounded bg-[var(--color-surface-sunken)] text-[var(--color-fg-muted)] hover:bg-[var(--color-brand-soft)] hover:text-[var(--color-brand)] transition-colors">Edit</button>
           <button onClick={onClone}  className="px-3 py-1 text-[12px] font-medium rounded bg-[var(--color-surface-sunken)] text-[var(--color-fg-muted)] hover:bg-[var(--color-brand-soft)] hover:text-[var(--color-brand)] transition-colors">Clone</button>
           <button onClick={onDelete} className="px-3 py-1 text-[12px] font-medium rounded bg-[var(--color-surface-sunken)] text-[var(--color-fg-muted)] hover:bg-red-50 hover:text-red-600 transition-colors">Delete</button>
@@ -472,6 +473,12 @@ export default function IngredientEditor() {
         </div>
       )}
 
+      <p className="text-[13px] text-[var(--color-fg-subtle)] mb-4 max-w-2xl">
+        Proteins, carbs, veggies, sauces, and marinades for the custom meal builder at{' '}
+        <span className="font-medium text-[var(--color-fg-muted)]">/customize</span>.
+        Builder rules (e.g. max veggies) are under Manage Custom Meals.
+      </p>
+
       {/* Type tabs */}
       <div className="flex gap-1 mb-6 bg-[var(--color-surface-sunken)] p-1 rounded-[var(--radius-input)] w-fit">
         {TYPE_TABS.map(({ key, label }) => (
@@ -495,9 +502,9 @@ export default function IngredientEditor() {
       </div>
 
       <div className="bg-[var(--color-surface-elevated)] rounded-[var(--radius-card)] border border-[var(--color-surface-sunken)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
+        <div className="overflow-x-auto md:overflow-visible">
+          <table className="w-full text-left border-collapse block md:table">
+            <thead className="hidden md:table-header-group">
               <tr className="bg-[var(--color-surface-sunken)] text-[12px] uppercase text-[var(--color-fg-muted)] tracking-wider">
                 <th className="p-3 w-8"></th>
                 <th className="p-4 font-semibold">Name</th>
@@ -507,7 +514,7 @@ export default function IngredientEditor() {
             </thead>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={visibleIngredients.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                <tbody className="divide-y divide-[var(--color-surface-sunken)] text-[14px]">
+                <tbody className="block md:table-row-group divide-y-0 md:divide-y divide-[var(--color-surface-sunken)] text-[14px]">
                   {visibleIngredients.length === 0 && (
                     <tr><td colSpan={4} className="p-8 text-center text-[var(--color-fg-muted)]">No {activeType}s yet.</td></tr>
                   )}
@@ -626,7 +633,8 @@ export default function IngredientEditor() {
                     <p className="text-[13px] text-[var(--color-fg-subtle)] py-3">No sizes yet — click "Add size" above.</p>
                   ) : (
                     <div className="border border-[var(--color-surface-sunken)] rounded-[var(--radius-input)] overflow-hidden">
-                      <table className="w-full text-[12px]">
+                      <div className="overflow-x-auto w-full">
+                        <table className="w-full text-[12px] whitespace-nowrap min-w-max">
                         <thead>
                           <tr className="bg-[var(--color-surface-sunken)] text-[var(--color-fg-muted)]">
                             <th className="p-2 text-left font-semibold">Size label</th>
@@ -700,8 +708,9 @@ export default function IngredientEditor() {
                             </tr>
                           ))}
                         </tbody>
-                      </table>
-                      <p className="text-[11px] text-[var(--color-fg-subtle)] px-3 py-2">
+                        </table>
+                      </div>
+                      <p className="text-[11px] text-[var(--color-fg-subtle)] px-3 py-2 border-t border-[var(--color-surface-sunken)]">
                         Macros on the default size auto-fill other sizes on blur (scales by oz ratio). Price is always manual.
                       </p>
                     </div>

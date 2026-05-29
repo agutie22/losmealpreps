@@ -1,14 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useCartStore } from '@/stores/cartStore';
-import type { BundleTier, Meal } from '@/stores/cartStore';
-import { fetchActiveMeals, fetchActiveBundles } from '@/lib/queries/public';
-import type { Bundle } from '@/lib/queries/public';
+import type { Meal } from '@/stores/cartStore';
+import { fetchActiveMeals, fetchActiveBundles, type BundleWithOptions } from '@/lib/queries/public';
+import {
+  getDefaultProteinSize,
+  getDefaultSlotOption,
+  getSlotOptionByCount,
+} from '@/lib/bundles';
 import MealSelector from './MealSelector';
 import SlotManager from './SlotManager';
 import OrderSummary from './OrderSummary';
+import BundleConfigPicker from './BundleConfigPicker';
 
-function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle[] }) {
-  const { activeTier, setTier, slots } = useCartStore();
+function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: BundleWithOptions[] }) {
+  const {
+    activeBundleId,
+    activeSlotCount,
+    selectedProteinSize,
+    slots,
+    setBundleConfig,
+  } = useCartStore();
   const [isMounted, setIsMounted] = useState(false);
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
@@ -17,21 +28,42 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
     setIsMounted(true);
 
     const params = new URLSearchParams(window.location.search);
-    const urlTier = params.get('tier') as BundleTier | null;
-    const currentTier = useCartStore.getState().activeTier;
+    const urlSlug = params.get('bundle');
+    const state = useCartStore.getState();
 
-    if (!currentTier || urlTier) {
-      const targetTier = urlTier || 'standard';
-      const bundle = bundles.find(b => b.tier === targetTier) || bundles[0];
-      if (bundle) {
-        setTier(bundle.tier as BundleTier, bundle.slot_count);
-        if (urlTier) window.history.replaceState({}, '', window.location.pathname);
-      }
-    } else {
-      const bundle = bundles.find(b => b.tier === currentTier);
-      if (bundle) setTier(bundle.tier as BundleTier, bundle.slot_count);
-    }
-  }, [bundles, setTier]);
+    const targetBundle =
+      bundles.find((b) => b.slug === urlSlug) ??
+      bundles.find((b) => b.id === state.activeBundleId) ??
+      bundles[0];
+
+    if (!targetBundle) return;
+
+    const defaultSlot = getDefaultSlotOption(targetBundle);
+    if (!defaultSlot) return;
+
+    const slotCount =
+      state.activeBundleId === targetBundle.id && state.activeSlotCount != null
+        ? state.activeSlotCount
+        : defaultSlot.slot_count;
+
+    const slotOption = getSlotOptionByCount(targetBundle, slotCount) ?? defaultSlot;
+    const defaultSize = getDefaultProteinSize(slotOption);
+    const proteinSize =
+      state.activeBundleId === targetBundle.id && state.selectedProteinSize
+        ? state.selectedProteinSize
+        : defaultSize
+          ? { label: defaultSize.size_label, priceCents: defaultSize.price_cents }
+          : null;
+
+    const preserveMeals =
+      state.activeBundleId === targetBundle.id &&
+      state.activeSlotCount === slotCount &&
+      !urlSlug;
+
+    setBundleConfig(targetBundle.id, slotCount, proteinSize, { preserveMeals });
+
+    if (urlSlug) window.history.replaceState({}, '', window.location.pathname);
+  }, [bundles, setBundleConfig]);
 
   useEffect(() => {
     if (!mobileSummaryOpen) return;
@@ -47,13 +79,27 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
     };
   }, [mobileSummaryOpen]);
 
+  const activeBundle = bundles.find((b) => b.id === activeBundleId);
+  const filteredMeals = useMemo(
+    () =>
+      activeBundle
+        ? meals.filter((m) => m.meal_type === activeBundle.meal_type)
+        : [],
+    [meals, activeBundle],
+  );
+
+  const configReady = Boolean(
+    activeBundle && activeSlotCount != null && selectedProteinSize != null,
+  );
+
   if (!isMounted) return <div className="min-h-screen bg-[var(--color-surface-base)]" />;
 
-  const activeBundle = bundles.find(b => b.tier === activeTier);
   if (!activeBundle) return null;
+
   const selectedCount = slots.filter((slot) => slot !== null).length;
-  const remainingCount = Math.max(activeBundle.slot_count - selectedCount, 0);
-  const isComplete = remainingCount === 0;
+  const slotTotal = activeSlotCount ?? slots.length;
+  const remainingCount = Math.max(slotTotal - selectedCount, 0);
+  const isComplete = configReady && remainingCount === 0;
 
   return (
     <div className="flex flex-col lg:flex-row min-h-[calc(100vh-72px)] bg-[var(--color-surface-base)] pb-24 lg:pb-0">
@@ -63,10 +109,56 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
             Build Your {activeBundle.display_name}
           </h1>
           <p className="text-[16px] text-[var(--color-fg-muted)] mt-2">
-            Select {activeBundle.slot_count} meals to complete your bundle.
+            {activeBundle.meal_type === 'weekly'
+              ? 'Pick from this week’s rotating chef specials.'
+              : 'Pick from our always-available staple meals.'}
           </p>
         </div>
-        <MealSelector meals={meals} />
+
+        {bundles.length > 1 && (
+          <div className="mb-6 grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-3">
+            {bundles.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => {
+                  const slot = getDefaultSlotOption(b);
+                  if (!slot) return;
+                  const size = getDefaultProteinSize(slot);
+                  setBundleConfig(
+                    b.id,
+                    slot.slot_count,
+                    size
+                      ? { label: size.size_label, priceCents: size.price_cents }
+                      : null,
+                  );
+                }}
+                className={`px-4 py-3 md:py-2.5 rounded-[var(--radius-pill)] text-[14px] md:text-[15px] font-semibold transition-colors flex items-center justify-center ${
+                  b.id === activeBundle.id
+                    ? 'bg-[var(--color-brand)] text-white shadow-md'
+                    : 'bg-[var(--color-surface-elevated)] border border-[var(--color-surface-sunken)] text-[var(--color-fg)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]'
+                }`}
+              >
+                {b.meal_type === 'weekly' ? 'Weekly Menu' : 'Staple Menu'}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <BundleConfigPicker bundle={activeBundle} />
+
+        {configReady ? (
+          <>
+            <p className="text-[15px] text-[var(--color-fg-muted)] mb-4">
+              Select {slotTotal} meals at {selectedProteinSize!.label} protein.
+            </p>
+            <MealSelector meals={filteredMeals} />
+          </>
+        ) : (
+          <p className="text-[15px] text-[var(--color-fg-subtle)]">
+            Choose your meal count and protein size to start selecting meals.
+          </p>
+        )}
       </div>
 
       <div className="hidden lg:block w-full lg:w-[30%] lg:min-w-[380px] bg-[var(--color-surface-sunken)] border-t lg:border-t-0 lg:border-l border-[var(--color-surface-sunken)]">
@@ -89,8 +181,9 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
           <div className="text-left">
             <p className="text-[12px] font-semibold uppercase tracking-wide text-[var(--color-fg-muted)]">Your Bundle</p>
             <p className="text-[14px] font-medium text-[var(--color-fg)]">
-              {selectedCount}/{activeBundle.slot_count} selected
-              {!isComplete && ` · ${remainingCount} to go`}
+              {configReady
+                ? `${selectedCount}/${slotTotal} selected${!isComplete ? ` · ${remainingCount} to go` : ''}`
+                : 'Choose size options'}
             </p>
           </div>
           <span className="inline-flex items-center px-3 py-1.5 rounded-[var(--radius-pill)] bg-[var(--color-brand)] text-white text-[13px] font-semibold">
@@ -116,7 +209,9 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
             <div className="px-4 py-3 bg-[var(--color-surface-elevated)] border-b border-[var(--color-surface-sunken)] flex items-center justify-between">
               <div>
                 <p className="text-[12px] uppercase tracking-wide text-[var(--color-fg-muted)]">Your Bundle</p>
-                <p className="text-[14px] font-medium text-[var(--color-fg)]">{selectedCount}/{activeBundle.slot_count} selected</p>
+                <p className="text-[14px] font-medium text-[var(--color-fg)]">
+                  {configReady ? `${selectedCount}/${slotTotal} selected` : 'Configure bundle'}
+                </p>
               </div>
               <button
                 type="button"
@@ -139,7 +234,7 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
 }
 
 export default function BundleBuilder() {
-  const [data, setData] = useState<{ meals: Meal[]; bundles: Bundle[] } | null>(null);
+  const [data, setData] = useState<{ meals: Meal[]; bundles: BundleWithOptions[] } | null>(null);
 
   useEffect(() => {
     Promise.all([fetchActiveMeals(), fetchActiveBundles()])
@@ -153,6 +248,14 @@ export default function BundleBuilder() {
     return (
       <div className="min-h-[calc(100vh-72px)] bg-[var(--color-surface-base)] flex items-center justify-center px-4 sm:px-6">
         <div className="text-[var(--color-fg-muted)] text-[16px]">Loading menu…</div>
+      </div>
+    );
+  }
+
+  if (data.bundles.length === 0) {
+    return (
+      <div className="min-h-[calc(100vh-72px)] bg-[var(--color-surface-base)] flex items-center justify-center px-4">
+        <p className="text-[var(--color-fg-muted)]">Bundles are not available right now.</p>
       </div>
     );
   }

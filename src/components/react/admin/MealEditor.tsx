@@ -100,9 +100,9 @@ function SortableMealRow({
     <tr
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
-      className="hover:bg-[var(--color-surface-base)]/50 transition-colors"
+      className="block md:table-row bg-[var(--color-surface-elevated)] md:bg-transparent border border-[var(--color-surface-sunken)] md:border-none rounded-[var(--radius-card)] md:rounded-none mb-4 md:mb-0 p-4 md:p-0 hover:bg-[var(--color-surface-base)]/50 transition-colors relative"
     >
-      <td className="p-3 w-8">
+      <td className="block md:table-cell md:p-3 md:w-8 absolute top-4 right-4 md:relative md:top-auto md:right-auto">
         <button
           {...attributes}
           {...listeners}
@@ -112,7 +112,7 @@ function SortableMealRow({
           <GripIcon />
         </button>
       </td>
-      <td className="p-4 font-medium text-[var(--color-fg)]">
+      <td className="block md:table-cell md:p-4 font-bold md:font-medium text-[16px] md:text-[14px] text-[var(--color-fg)] mb-3 md:mb-0 pr-8 md:pr-0">
         {meal.name}
         {meal.hero_image_url && (
           <span className="block text-[11px] text-[var(--color-fg-subtle)] font-normal mt-1 truncate max-w-[200px]">
@@ -120,8 +120,12 @@ function SortableMealRow({
           </span>
         )}
       </td>
-      <td className="p-4 text-[var(--color-fg-muted)]">{meal.category}</td>
-      <td className="p-4">
+      <td className="flex justify-between items-center md:table-cell md:p-4 text-[var(--color-fg-muted)] mb-2 md:mb-0 text-[13px] md:text-[14px]">
+        <span className="md:hidden font-medium text-[var(--color-fg)]">Category</span>
+        <span>{meal.category}</span>
+      </td>
+      <td className="flex justify-between items-center md:table-cell md:p-4 mb-2 md:mb-0">
+        <span className="md:hidden font-medium text-[var(--color-fg)] text-[13px]">Price</span>
         <div className="flex items-center gap-1">
           <span className="text-[var(--color-fg-muted)]">$</span>
           <input
@@ -139,7 +143,8 @@ function SortableMealRow({
           />
         </div>
       </td>
-      <td className="p-4 text-center">
+      <td className="flex justify-between items-center md:table-cell md:p-4 md:text-center mb-2 md:mb-0">
+        <span className="md:hidden font-medium text-[var(--color-fg)] text-[13px]">Active</span>
         <input
           type="checkbox"
           checked={meal.is_active}
@@ -147,7 +152,8 @@ function SortableMealRow({
           className="w-4 h-4 rounded text-[var(--color-brand)] focus:ring-[var(--color-brand)] cursor-pointer accent-[var(--color-brand)]"
         />
       </td>
-      <td className="p-4 text-center">
+      <td className="flex justify-between items-center md:table-cell md:p-4 md:text-center mb-4 md:mb-0">
+        <span className="md:hidden font-medium text-[var(--color-fg)] text-[13px]">Featured</span>
         <input
           type="checkbox"
           checked={meal.is_featured}
@@ -155,8 +161,8 @@ function SortableMealRow({
           className="w-4 h-4 rounded text-[var(--color-brand)] focus:ring-[var(--color-brand)] cursor-pointer accent-[var(--color-brand)]"
         />
       </td>
-      <td className="p-4 text-center">
-        <div className="flex items-center justify-center gap-2">
+      <td className="block md:table-cell md:p-4 md:text-center pt-3 border-t border-[var(--color-surface-sunken)] md:border-none md:pt-0">
+        <div className="flex items-center justify-end md:justify-center gap-2 w-full">
           <button
             onClick={onEdit}
             className="px-3 py-1 text-[12px] font-medium rounded bg-[var(--color-surface-sunken)] text-[var(--color-fg-muted)] hover:bg-[var(--color-brand-soft)] hover:text-[var(--color-brand)] transition-colors"
@@ -402,9 +408,9 @@ export default function MealEditor() {
       </div>
 
       <div className="bg-[var(--color-surface-elevated)] rounded-[var(--radius-card)] border border-[var(--color-surface-sunken)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
+        <div className="overflow-x-auto md:overflow-visible">
+          <table className="w-full text-left border-collapse block md:table">
+            <thead className="hidden md:table-header-group">
               <tr className="bg-[var(--color-surface-sunken)] text-[12px] uppercase text-[var(--color-fg-muted)] tracking-wider">
                 <th className="p-3 w-8"></th>
                 <th className="p-4 font-semibold">Meal Name</th>
@@ -417,7 +423,7 @@ export default function MealEditor() {
             </thead>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={meals.map(m => m.id)} strategy={verticalListSortingStrategy}>
-                <tbody className="divide-y divide-[var(--color-surface-sunken)] text-[14px]">
+                <tbody className="block md:table-row-group divide-y-0 md:divide-y divide-[var(--color-surface-sunken)] text-[14px]">
                   {meals.length === 0 && (
                     <tr><td colSpan={7} className="p-8 text-center text-[var(--color-fg-muted)]">No meals yet.</td></tr>
                   )}

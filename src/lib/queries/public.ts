@@ -1,8 +1,11 @@
 import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/types/database.types';
+import type { BundleWithOptions, BundleWithOptionsRow } from '@/lib/bundles';
+import { mapBundleWithOptions } from '@/lib/bundles';
+import { SETTINGS_DEFAULTS } from '@/lib/queries/settings';
 
 export type Meal = Database['public']['Tables']['meals']['Row'];
-export type Bundle = Database['public']['Tables']['bundles']['Row'];
+export type { Bundle, BundleWithOptions } from '@/lib/bundles';
 export type Ingredient = Database['public']['Tables']['ingredients']['Row'];
 export type IngredientVariant = Database['public']['Tables']['ingredient_variants']['Row'];
 export type CustomMealConfig = Database['public']['Tables']['custom_meal_config']['Row'];
@@ -28,20 +31,20 @@ export async function fetchActiveMeals(): Promise<Meal[]> {
   return data;
 }
 
-export async function fetchActiveBundles(): Promise<Bundle[]> {
+export async function fetchActiveBundles(): Promise<BundleWithOptions[]> {
   const { data, error } = await supabase
     .from('bundles')
-    .select('*')
+    .select('*, bundle_slot_options(*, bundle_protein_sizes(*))')
     .eq('is_active', true)
-    .order('slot_count', { ascending: true });
+    .order('slug', { ascending: true });
   if (error) throw error;
-  return data;
+  return (data ?? []).map((row) => mapBundleWithOptions(row as BundleWithOptionsRow));
 }
 
 export async function fetchSiteSettings(): Promise<Record<string, string>> {
   const { data, error } = await supabase.from('site_settings').select('key, value');
   if (error) throw error;
-  return (data ?? []).reduce((acc, r) => ({ ...acc, [r.key]: r.value }), {} as Record<string, string>);
+  return (data ?? []).reduce((acc, r) => ({ ...acc, [r.key]: r.value }), { ...SETTINGS_DEFAULTS } as Record<string, string>);
 }
 
 export async function fetchCustomLineData(): Promise<CustomLineData> {

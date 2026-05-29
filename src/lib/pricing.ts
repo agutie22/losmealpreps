@@ -1,3 +1,8 @@
+export {
+  getBundlePrice,
+  getMinBundlePrice,
+} from '@/lib/bundles';
+
 export const centsToDecimal = (cents: number) => (cents / 100).toFixed(2);
 export const formatPrice = (cents: number) => `$${centsToDecimal(cents)}`;
 

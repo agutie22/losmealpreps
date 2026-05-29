@@ -188,7 +188,7 @@ export function priceCustomMeal(sel: CustomSelection, cfg: CustomMealConfig): nu
   return c;
 }
 
-// Signature meals & bundles: no computation — price_cents / base_price_cents is read directly.
+// Signature meals: price from meals.base_price_cents. Bundles: price from bundle_protein_sizes.price_cents for the chosen slot + size (flat bundle price).
 ```
 
 `formatPrice` replaces the inline `(cents/100).toFixed(2)` in `MealCard.astro`, `BundleTierCard.astro`, `OrderSummary.tsx`, `MealEditor.tsx` — a pure extraction, no behavior change.
@@ -208,7 +208,7 @@ Keep the existing list + price/toggle editing. **Add:**
 
 The weekly workflow this enables: deactivate last week's 3 weekly meals, create/activate this week's 3, leave the 2 staples alone.
 
-### 5.2 New — Ingredient Library module
+### 5.2 Manage Ingredients (ingredient library module)
 
 A third admin tab. Tabbed by type: **Proteins · Carbs · Veggies · Sauces · Flavors**. Each is a table with inline active toggle + reorder (`display_order`).
 
@@ -220,11 +220,23 @@ Create/edit form is **type-aware**:
 
 Include a **"Clone ingredient"** action for near-duplicate entries. Images → Supabase Storage bucket `ingredient-photos`.
 
-### 5.3 New — Custom Meal Config module
+### 5.3 Manage Custom Meals (builder settings)
 
-A single-record editor for the one `custom_meal_config` row: base price, included veggie count, included sauce count, max veggie count. Rarely touched.
+Admin tab **Manage Custom Meals** — single-record editor for `custom_meal_config` (today: max veggie count for `/customize`). Not where ingredients are added; use **Manage Ingredients** for the library.
 
-### 5.4 Deploy
+Other columns exist on the row (`base_price_cents`, included counts) but are not exposed in admin until the builder uses them.
+
+### 5.4 Bundle admin (`BundleEditor`)
+
+**Manage Bundles** tab. Two products by default: **Staple** (`meal_type=staple`) and **Weekly** (`meal_type=weekly`). Per bundle:
+
+- Edit display name, tagline, `is_active`.
+- **Slot options** — add/remove `slot_count` values (e.g. 5, 10); optional label; one `is_default`.
+- **Protein sizes** — per slot option, rows of `size_label` + `price_cents` (e.g. 4 oz / 6 oz / 8 oz); one default per slot. Bundle checkout price = selected size row’s `price_cents` (flat, not summed from meals).
+
+Customer builder filters meals by `bundle.meal_type`; changing slot count or protein size clears meal selections. One protein size applies to every meal in the bundle.
+
+### 5.5 Deploy
 
 `DeployManager` already exists. Per `PROJECT_PLAN.md` Gap E4, have its button call the GitHub `workflow_dispatch` API directly so a rebuild actually happens; the `deploy_triggers` insert stays as an audit log. After any admin save, the existing "changes go live on next build" messaging applies.
 
@@ -246,7 +258,7 @@ The Custom line is independent of the bundle builder on `/build` — different r
 2. `lib/macros.ts` + `lib/pricing.ts` (Gap B) — pure functions first; everything below needs them.
 3. Extend `MealEditor` to full CRUD (5.1). Replace the "Placeholder Macros" pill on `MealCard` with real values (Gap C2).
 4. Migration `0007`, regenerate types.
-5. Ingredient Library module (5.2), then Custom Meal Config module (5.3).
+5. Manage Ingredients (5.2), then Manage Custom Meals settings (5.3).
 6. `/customize` page + builder island (6), `format-order.ts` custom formatter.
 7. Migrations `0008` (allowlist) and optionally `0009` (drop dead joins).
 

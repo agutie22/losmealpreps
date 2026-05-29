@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -52,39 +57,103 @@ export type Database = {
         }
         Relationships: []
       }
+      bundle_protein_sizes: {
+        Row: {
+          bundle_slot_option_id: string
+          display_order: number
+          id: string
+          is_default: boolean
+          price_cents: number
+          size_label: string
+        }
+        Insert: {
+          bundle_slot_option_id: string
+          display_order?: number
+          id?: string
+          is_default?: boolean
+          price_cents: number
+          size_label: string
+        }
+        Update: {
+          bundle_slot_option_id?: string
+          display_order?: number
+          id?: string
+          is_default?: boolean
+          price_cents?: number
+          size_label?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_protein_sizes_bundle_slot_option_id_fkey"
+            columns: ["bundle_slot_option_id"]
+            isOneToOne: false
+            referencedRelation: "bundle_slot_options"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bundle_slot_options: {
+        Row: {
+          bundle_id: string
+          display_order: number
+          id: string
+          is_default: boolean
+          label: string | null
+          slot_count: number
+        }
+        Insert: {
+          bundle_id: string
+          display_order?: number
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          slot_count: number
+        }
+        Update: {
+          bundle_id?: string
+          display_order?: number
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          slot_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_slot_options_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bundles: {
         Row: {
-          base_price_cents: number
           display_name: string
           hero_image_url: string | null
           id: string
           is_active: boolean
-          per_slot_savings_cents: number
-          slot_count: number
+          meal_type: string
+          slug: string
           tagline: string | null
-          tier: string
         }
         Insert: {
-          base_price_cents: number
           display_name: string
           hero_image_url?: string | null
           id?: string
           is_active?: boolean
-          per_slot_savings_cents?: number
-          slot_count: number
+          meal_type: string
+          slug: string
           tagline?: string | null
-          tier: string
         }
         Update: {
-          base_price_cents?: number
           display_name?: string
           hero_image_url?: string | null
           id?: string
           is_active?: boolean
-          per_slot_savings_cents?: number
-          slot_count?: number
+          meal_type?: string
+          slug?: string
           tagline?: string | null
-          tier?: string
         }
         Relationships: []
       }
@@ -570,4 +639,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
