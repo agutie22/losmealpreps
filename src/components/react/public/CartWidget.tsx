@@ -18,6 +18,32 @@ interface ToastState {
   tone: 'success' | 'warning' | 'error';
 }
 
+async function copyOrderText(text: string): Promise<boolean> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to execCommand for stricter mobile browsers.
+    }
+  }
+
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
 export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
   const { items, removeItem, clearItems, replaceItems } = useCartStore();
   const [open, setOpen] = useState(false);
@@ -84,46 +110,71 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
   const handleSendOrder = async () => {
     if (items.length === 0) return;
 
-    let latestItems = items;
-    let priceWasUpdated = false;
-    try {
-      const repriced = await repriceCartItems(items);
-      latestItems = repriced.items;
-      priceWasUpdated = repriced.hadPriceChanges;
-      if (repriced.hadPriceChanges) replaceItems(repriced.items);
-    } catch {
-      setToast({
-        title: 'Price refresh skipped',
-        message: 'Could not refresh latest prices. Using current cart values.',
-        tone: 'warning',
-      });
-    }
+    const clickStartedAt = Date.now();
+    // #region agent log
+    fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'post-fix',hypothesisId:'H1-H4',location:'CartWidget.tsx:handleSendOrder:entry',message:'Send order clicked',data:{isSecureContext:window.isSecureContext,hasClipboard:!!navigator.clipboard,hasWriteText:typeof navigator.clipboard?.writeText==='function',userActivationActive:navigator.userActivation?.isActive,userActivationHasBeenActive:navigator.userActivation?.hasBeenActive,protocol:window.location.protocol,host:window.location.host},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
-    const orderText = formatFullOrder(latestItems, discountCents, totalCents);
+    let orderText = formatFullOrder(items, discountCents, totalCents);
 
-    try {
-      await navigator.clipboard.writeText(orderText);
-      setToast({
-        title: 'Order copied to clipboard',
-        message: priceWasUpdated
-          ? 'Latest prices were applied. You will be redirected to Instagram to paste and send.'
-          : 'You will be redirected to Instagram. Paste your order in the DM and send.',
-        tone: 'success',
-      });
-      setRedirecting(true);
-      window.setTimeout(() => {
-        window.open(`https://ig.me/m/${igHandle}`, '_blank');
-        clearItems();
-        setOpen(false);
-        setRedirecting(false);
-      }, 900);
-    } catch {
+    // #region agent log
+    fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'post-fix',hypothesisId:'H1',location:'CartWidget.tsx:handleSendOrder:before-immediate-clipboard',message:'Copying before reprice',data:{orderTextLength:orderText.length,elapsedMs:Date.now()-clickStartedAt,userActivationActive:navigator.userActivation?.isActive,isSecureContext:window.isSecureContext},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
+    const copied = await copyOrderText(orderText);
+    if (!copied) {
+      // #region agent log
+      fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'post-fix',hypothesisId:'H1-H4',location:'CartWidget.tsx:handleSendOrder:immediate-clipboard-failed',message:'Immediate clipboard copy failed',data:{elapsedMs:Date.now()-clickStartedAt,userActivationActive:navigator.userActivation?.isActive,isSecureContext:window.isSecureContext,hasClipboard:!!navigator.clipboard},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       setToast({
         title: 'Clipboard blocked',
         message: 'Could not copy automatically. Please copy your order from the cart and paste it in Instagram.',
         tone: 'error',
       });
+      return;
     }
+
+    // #region agent log
+    fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'post-fix',hypothesisId:'H1',location:'CartWidget.tsx:handleSendOrder:immediate-clipboard-success',message:'Immediate clipboard copy succeeded',data:{elapsedMs:Date.now()-clickStartedAt},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
+    let priceWasUpdated = false;
+    let priceRefreshFailed = false;
+    try {
+      const repriced = await repriceCartItems(items);
+      if (repriced.hadPriceChanges) {
+        replaceItems(repriced.items);
+        priceWasUpdated = true;
+        const updatedTotals = calculateCartTotals(repriced.items, sauceConfig);
+        orderText = formatFullOrder(repriced.items, updatedTotals.discountCents, updatedTotals.totalCents);
+        const reCopied = await copyOrderText(orderText);
+        // #region agent log
+        fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'post-fix',hypothesisId:'H1',location:'CartWidget.tsx:handleSendOrder:repriced-clipboard',message:'Attempted clipboard update after reprice',data:{reCopied,repricedElapsedMs:Date.now()-clickStartedAt,userActivationActive:navigator.userActivation?.isActive},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+      }
+    } catch (repriceError) {
+      priceRefreshFailed = true;
+      // #region agent log
+      fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'post-fix',hypothesisId:'H5',location:'CartWidget.tsx:handleSendOrder:reprice-catch',message:'Reprice failed after clipboard copy',data:{errorName:repriceError instanceof Error?repriceError.name:'unknown',errorMessage:repriceError instanceof Error?repriceError.message:String(repriceError),elapsedMs:Date.now()-clickStartedAt},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+    }
+
+    setToast({
+      title: 'Order copied to clipboard',
+      message: priceRefreshFailed
+        ? 'Could not refresh latest prices. Copied order uses current cart values. You will be redirected to Instagram.'
+        : priceWasUpdated
+          ? 'Latest prices were applied. You will be redirected to Instagram to paste and send.'
+          : 'You will be redirected to Instagram. Paste your order in the DM and send.',
+      tone: priceRefreshFailed ? 'warning' : 'success',
+    });
+    setRedirecting(true);
+    window.setTimeout(() => {
+      window.open(`https://ig.me/m/${igHandle}`, '_blank');
+      clearItems();
+      setOpen(false);
+      setRedirecting(false);
+    }, 900);
   };
 
   return (

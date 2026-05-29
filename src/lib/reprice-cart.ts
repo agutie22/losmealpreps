@@ -88,7 +88,7 @@ export async function repriceCartItems(items: CartItem[]): Promise<{ items: Cart
       return { ...item, bundle: { ...item.bundle, totalCents: newTotal } };
     }
 
-    if (!item.build.selection) return item;
+    if (item.kind !== 'custom' || !item.build?.selection) return item;
     const s = item.build.selection;
     const proteinVariantPrice = s.proteinVariantId ? (variantById.get(s.proteinVariantId)?.price_cents ?? 0) : 0;
     const carbUpcharge = s.carbId ? (ingredientById.get(s.carbId)?.upcharge_cents ?? 0) : 0;
