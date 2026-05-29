@@ -28,7 +28,7 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
 
   const sauceConfig = useMemo(() => parseSauceConfig(saucePricingConfigRaw), [saucePricingConfigRaw]);
 
-  const { totalCents, discountCents, subtotalCents } = useMemo(
+  const { totalCents, discountCents, subtotalCents, eligibleSpendCents } = useMemo(
     () => calculateCartTotals(items, sauceConfig),
     [items, sauceConfig]
   );
@@ -266,7 +266,7 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
                 ))
               )}
               
-              <CartAddonsUpsell />
+              <CartAddonsUpsell sauceConfig={sauceConfig} />
             </div>
 
             <div
@@ -279,15 +279,30 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
                   {formatPrice(subtotalCents)}
                 </span>
               </div>
-              {discountCents > 0 && (
+              {discountCents > 0 ? (
                 <div className="flex justify-between items-center text-emerald-600">
                   <span className="text-[14px]">Sauce Promo Discount</span>
                   <span className="text-[16px] font-medium">
                     -{formatPrice(discountCents)}
                   </span>
                 </div>
+              ) : (
+                eligibleSpendCents < sauceConfig.free_threshold_cents && sauceConfig.free_threshold_cents > 0 && (
+                  <div className="mt-2 p-3 bg-emerald-50 rounded-[var(--radius-base)] border border-emerald-100 flex items-center justify-between">
+                    <span className="text-[12px] font-medium text-emerald-800">
+                      Add {formatPrice(sauceConfig.free_threshold_cents - eligibleSpendCents)} more to unlock a FREE sauce!
+                    </span>
+                    <div className="w-16 h-1.5 bg-emerald-200 rounded-full overflow-hidden shrink-0 ml-3">
+                      <div 
+                        className="h-full bg-emerald-500 rounded-full" 
+                        style={{ width: `${Math.min(100, (eligibleSpendCents / sauceConfig.free_threshold_cents) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )
               )}
-              <div className="flex justify-between items-center pt-2 border-t border-[var(--color-surface-sunken)]">
+
+              <div className="flex justify-between items-center pt-2 mt-2 border-t border-[var(--color-surface-sunken)]">
                 <span className="text-[14px] font-bold text-[var(--color-fg)]">Total</span>
                 <span className="text-[24px] font-[family-name:var(--font-display)] font-bold text-[var(--color-brand)]">
                   {formatPrice(totalCents)}

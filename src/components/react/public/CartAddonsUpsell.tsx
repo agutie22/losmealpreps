@@ -9,7 +9,15 @@ interface SauceAddon {
   upcharge_cents: number;
 }
 
-export default function CartAddonsUpsell() {
+interface CartAddonsUpsellProps {
+  sauceConfig?: {
+    single_price_cents: number;
+    pair_price_cents: number;
+    free_threshold_cents: number;
+  };
+}
+
+export default function CartAddonsUpsell({ sauceConfig }: CartAddonsUpsellProps) {
   const [sauces, setSauces] = useState<SauceAddon[]>([]);
   const [loading, setLoading] = useState(true);
   const addAddonItem = useCartStore((state) => state.addAddonItem);
@@ -46,7 +54,16 @@ export default function CartAddonsUpsell() {
 
   return (
     <div className="mt-4 pt-4 border-t border-[var(--color-surface-sunken)]">
-      <h3 className="text-[13px] font-semibold text-[var(--color-fg)] mb-3">Add some extras?</h3>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-[13px] font-semibold text-[var(--color-fg)]">Add some extras?</h3>
+      </div>
+      {sauceConfig && (
+        <div className="mb-3 px-3 py-2 bg-emerald-50 rounded-[var(--radius-base)] border border-emerald-100">
+          <p className="text-[12px] font-medium text-emerald-800">
+            Promo: 2 for {formatPrice(sauceConfig.pair_price_cents)} or FREE with a {formatPrice(sauceConfig.free_threshold_cents)} order.
+          </p>
+        </div>
+      )}
       <div className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar">
         {sauces.map((sauce) => (
           <div key={sauce.id} className="min-w-[120px] snap-start bg-[var(--color-surface-base)] rounded-[var(--radius-card)] p-3 shadow-sm border border-[var(--color-surface-sunken)] flex flex-col justify-between">
