@@ -2,6 +2,11 @@
   "name": "losmealpreps-v2",
   "type": "module",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/4444Studios/losmealpreps.git"
+  },
+  "homepage": "https://losmealpreps.com/",
   "engines": {
     "node": ">=22.12.0"
   },
