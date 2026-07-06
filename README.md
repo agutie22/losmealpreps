@@ -2,6 +2,14 @@
 
 Static Astro storefront for Los Meal Preps. Public catalog data comes from Supabase at build time; admin and builder flows use client-side React islands.
 
+**Repository:** [github.com/4444Studios/losmealpreps](https://github.com/4444Studios/losmealpreps)
+
+```bash
+git clone git@github.com:4444Studios/losmealpreps.git
+```
+
+**Deploy:** GitHub Actions → GitHub Pages (`losmealpreps.com`). If a Hostinger VPS also pulls this repo, update its remote to `4444Studios/losmealpreps` after the org transfer.
+
 ## Commands
 
 ```sh
