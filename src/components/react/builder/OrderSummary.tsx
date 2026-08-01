@@ -43,6 +43,7 @@ export default function OrderSummary({ bundle }: OrderSummaryProps) {
       mealNames: filledSlots.map((meal) => meal.name),
     });
     clearBuilderSlots();
+    window.dispatchEvent(new CustomEvent('bundle-sheet:close'));
     window.dispatchEvent(new CustomEvent('cart:open:request'));
   };
 

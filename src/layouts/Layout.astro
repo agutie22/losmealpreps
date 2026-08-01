@@ -19,7 +19,7 @@ const socialImage = new URL(image, Astro.site);
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link rel="canonical" href={canonical.toString()} />
@@ -61,56 +61,84 @@ const socialImage = new URL(image, Astro.site);
           >
             Start Building
           </a>
-          <button id="mobile-menu-toggle" class="md:hidden text-[var(--color-brand)] p-2" aria-label="Toggle menu" aria-expanded="false">
+          <button id="mobile-menu-toggle" class="md:hidden inline-flex items-center justify-center min-h-[44px] min-w-[44px] text-[var(--color-brand)] rounded-full hover:bg-[var(--color-surface-sunken)] transition-colors" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
             <svg id="icon-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
             <svg id="icon-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
       </div>
-
-      <div id="mobile-menu" class="hidden md:hidden border-t border-[var(--color-surface-sunken)]">
-        <nav class="container mx-auto px-6 py-4 flex flex-col gap-1 text-[14px] font-medium">
-          <a href="/#how-it-works" class="py-3 text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">How It Works</a>
-          <a href="/#menu" class="py-3 text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">Menu</a>
-          <a href="/#bundles" class="py-3 text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">Bundles</a>
-          <a href="/customize" class="py-3 text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">Custom Meal</a>
-          <a href="/consult" class="py-3 text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">Consultation</a>
-          <a href="/#bundles" class="mt-2 inline-flex items-center justify-center bg-[var(--color-brand)] text-[var(--color-surface-elevated)] px-6 py-2.5 rounded-[var(--radius-pill)] hover:bg-[var(--color-brand-hover)] transition-colors">Start Building</a>
-        </nav>
-      </div>
     </header>
 
+    <div id="mobile-menu" class="hidden md:hidden fixed inset-0 top-[72px] z-[90]" role="dialog" aria-modal="true" aria-label="Site menu">
+      <div id="mobile-menu-backdrop" class="absolute inset-0 bg-black/35" aria-hidden="true"></div>
+      <nav class="relative bg-[var(--color-surface-base)] border-b border-[var(--color-surface-sunken)] shadow-[var(--shadow-rail)] container mx-auto px-6 py-4 flex flex-col gap-1 text-[14px] font-medium" style="padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));">
+        <a href="/#how-it-works" class="py-3 min-h-[44px] flex items-center text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">How It Works</a>
+        <a href="/#menu" class="py-3 min-h-[44px] flex items-center text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">Menu</a>
+        <a href="/#bundles" class="py-3 min-h-[44px] flex items-center text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">Bundles</a>
+        <a href="/customize" class="py-3 min-h-[44px] flex items-center text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">Custom Meal</a>
+        <a href="/consult" class="py-3 min-h-[44px] flex items-center text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors">Consultation</a>
+        <a href="/#bundles" class="mt-2 inline-flex items-center justify-center min-h-[44px] bg-[var(--color-brand)] text-[var(--color-surface-elevated)] px-6 py-2.5 rounded-[var(--radius-pill)] hover:bg-[var(--color-brand-hover)] transition-colors">Start Building</a>
+      </nav>
+    </div>
+
     <script>
+      import { lockBodyScroll, unlockBodyScroll } from '@/lib/scroll-lock';
+
       const toggle = document.getElementById('mobile-menu-toggle');
       const menu = document.getElementById('mobile-menu');
+      const backdrop = document.getElementById('mobile-menu-backdrop');
       const iconOpen = document.getElementById('icon-open');
       const iconClose = document.getElementById('icon-close');
+      let menuLocked = false;
+
+      const isMenuOpen = () => menu != null && !menu.classList.contains('hidden');
+
       const closeMobileMenu = () => {
-        menu?.classList.add('hidden');
+        if (!menu || !isMenuOpen()) return;
+        menu.classList.add('hidden');
         iconOpen?.classList.remove('hidden');
         iconClose?.classList.add('hidden');
         toggle?.setAttribute('aria-expanded', 'false');
+        if (menuLocked) {
+          unlockBodyScroll();
+          menuLocked = false;
+        }
+      };
+
+      const openMobileMenu = () => {
+        if (!menu || isMenuOpen()) return;
+        menu.classList.remove('hidden');
+        iconOpen?.classList.add('hidden');
+        iconClose?.classList.remove('hidden');
+        toggle?.setAttribute('aria-expanded', 'true');
+        if (!menuLocked) {
+          lockBodyScroll();
+          menuLocked = true;
+        }
+        window.dispatchEvent(new CustomEvent('mobile-menu:open'));
       };
 
       toggle?.addEventListener('click', () => {
-        const isOpen = !menu?.classList.contains('hidden');
-        menu?.classList.toggle('hidden');
-        iconOpen?.classList.toggle('hidden');
-        iconClose?.classList.toggle('hidden');
-        toggle.setAttribute('aria-expanded', String(!isOpen));
-        if (!isOpen) window.dispatchEvent(new CustomEvent('mobile-menu:open'));
+        if (isMenuOpen()) closeMobileMenu();
+        else openMobileMenu();
       });
 
-      menu?.querySelectorAll('a').forEach(link => {
+      backdrop?.addEventListener('click', closeMobileMenu);
+
+      menu?.querySelectorAll('a').forEach((link) => {
         link.addEventListener('click', () => {
           closeMobileMenu();
         });
       });
 
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMobileMenu();
+      });
+
       window.addEventListener('cart:open', closeMobileMenu);
     </script>
 
-    <main class="flex-1">
+    <main class="flex-1 main-with-cart-clearance">
       <slot />
     </main>
 

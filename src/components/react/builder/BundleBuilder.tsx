@@ -7,6 +7,7 @@ import {
   getDefaultSlotOption,
   getSlotOptionByCount,
 } from '@/lib/bundles';
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/scroll-lock';
 import MealSelector from './MealSelector';
 import SlotManager from './SlotManager';
 import OrderSummary from './OrderSummary';
@@ -66,15 +67,24 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
   }, [bundles, setBundleConfig]);
 
   useEffect(() => {
+    const closeSheet = () => setMobileSummaryOpen(false);
+    window.addEventListener('bundle-sheet:close', closeSheet);
+    window.addEventListener('cart:open', closeSheet);
+    return () => {
+      window.removeEventListener('bundle-sheet:close', closeSheet);
+      window.removeEventListener('cart:open', closeSheet);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!mobileSummaryOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setMobileSummaryOpen(false);
     };
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
     window.addEventListener('keydown', onKeyDown);
     return () => {
-      document.body.style.overflow = originalOverflow;
+      unlockBodyScroll();
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [mobileSummaryOpen]);
@@ -102,7 +112,7 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
   const isComplete = configReady && remainingCount === 0;
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-72px)] bg-[var(--color-surface-base)] pb-24 lg:pb-0">
+    <div className="flex flex-col lg:flex-row min-h-[calc(100dvh-72px)] bg-[var(--color-surface-base)] pb-24 lg:pb-0">
       <div className="flex-1 lg:max-w-[70%] p-4 md:p-6 lg:p-8 overflow-y-auto">
         <div className="mb-6 md:mb-8">
           <h1 className="font-[family-name:var(--font-display)] font-bold text-[32px] md:text-[40px] text-[var(--color-fg)]">
@@ -162,7 +172,7 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
       </div>
 
       <div className="hidden lg:block w-full lg:w-[30%] lg:min-w-[380px] bg-[var(--color-surface-sunken)] border-t lg:border-t-0 lg:border-l border-[var(--color-surface-sunken)]">
-        <div className="lg:sticky lg:top-[72px] h-auto lg:h-[calc(100vh-72px)] flex flex-col">
+        <div className="lg:sticky lg:top-[72px] h-auto lg:h-[calc(100dvh-72px)] flex flex-col">
           <SlotManager />
           <div className="p-4 lg:p-6 bg-[var(--color-surface-elevated)] border-t border-[var(--color-surface-sunken)] lg:mt-0 lg:flex-1 flex flex-col justify-end">
             <OrderSummary bundle={activeBundle} />
@@ -170,11 +180,14 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
         </div>
       </div>
 
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-[var(--color-surface-sunken)] bg-[var(--color-surface-elevated)] shadow-[var(--shadow-rail)]">
+      <div
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-[var(--color-surface-sunken)] bg-[var(--color-surface-elevated)] shadow-[var(--shadow-rail)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         <button
           type="button"
           onClick={() => setMobileSummaryOpen(true)}
-          className="w-full px-4 py-3 flex items-center justify-between gap-4"
+          className="w-full px-4 py-3 min-h-[52px] flex items-center justify-between gap-4"
           aria-expanded={mobileSummaryOpen}
           aria-controls="mobile-bundle-sheet"
         >
@@ -193,7 +206,7 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
       </div>
 
       {mobileSummaryOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
+        <div className="lg:hidden fixed inset-0 z-[100]">
           <div
             className="absolute inset-0 bg-black/40"
             aria-hidden="true"
@@ -204,7 +217,7 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
             role="dialog"
             aria-modal="true"
             aria-label="Bundle summary"
-            className="absolute inset-x-0 bottom-0 max-h-[85vh] bg-[var(--color-surface-sunken)] rounded-t-[24px] border-t border-[var(--color-surface-sunken)] overflow-hidden flex flex-col"
+            className="absolute inset-x-0 bottom-0 max-h-[85dvh] bg-[var(--color-surface-sunken)] rounded-t-[24px] border-t border-[var(--color-surface-sunken)] overflow-hidden flex flex-col"
           >
             <div className="px-4 py-3 bg-[var(--color-surface-elevated)] border-b border-[var(--color-surface-sunken)] flex items-center justify-between">
               <div>
@@ -216,14 +229,17 @@ function BundleBuilderInner({ meals, bundles }: { meals: Meal[]; bundles: Bundle
               <button
                 type="button"
                 onClick={() => setMobileSummaryOpen(false)}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-full text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)] transition-colors"
+                className="h-11 w-11 inline-flex items-center justify-center rounded-full text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)] transition-colors"
                 aria-label="Close bundle summary"
               >
                 X
               </button>
             </div>
             <SlotManager />
-            <div className="p-4 bg-[var(--color-surface-elevated)] border-t border-[var(--color-surface-sunken)]">
+            <div
+              className="p-4 bg-[var(--color-surface-elevated)] border-t border-[var(--color-surface-sunken)]"
+              style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
+            >
               <OrderSummary bundle={activeBundle} />
             </div>
           </section>
@@ -246,7 +262,7 @@ export default function BundleBuilder() {
 
   if (!data) {
     return (
-      <div className="min-h-[calc(100vh-72px)] bg-[var(--color-surface-base)] flex items-center justify-center px-4 sm:px-6">
+      <div className="min-h-[calc(100dvh-72px)] bg-[var(--color-surface-base)] flex items-center justify-center px-4 sm:px-6">
         <div className="text-[var(--color-fg-muted)] text-[16px]">Loading menu…</div>
       </div>
     );
@@ -254,7 +270,7 @@ export default function BundleBuilder() {
 
   if (data.bundles.length === 0) {
     return (
-      <div className="min-h-[calc(100vh-72px)] bg-[var(--color-surface-base)] flex items-center justify-center px-4">
+      <div className="min-h-[calc(100dvh-72px)] bg-[var(--color-surface-base)] flex items-center justify-center px-4">
         <p className="text-[var(--color-fg-muted)]">Bundles are not available right now.</p>
       </div>
     );

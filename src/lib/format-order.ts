@@ -1,5 +1,11 @@
 import { formatPrice } from './pricing';
-import type { CartItem } from '@/stores/cartStore';
+import type { CartItem, CustomBuildSummary } from '@/stores/cartStore';
+
+/** Official Instagram DM per-message ceiling. */
+export const INSTAGRAM_DM_CHAR_LIMIT = 1000;
+
+/** Soft budget used when building/splitting paste parts (buffer for paste quirks). */
+export const INSTAGRAM_DM_SOFT_LIMIT = 980;
 
 export function formatBundleOrder(
   bundleName: string,
@@ -13,11 +19,11 @@ export function formatBundleOrder(
     return acc;
   }, {} as Record<string, number>);
 
-  let message = `Hey Los Meal Preps! I'd like to order the ${bundleName} (${slotCount} meals, ${proteinSizeLabel} protein for all).\n\nMy selections:\n`;
+  let message = `Hey Los Meal Preps! Order: ${bundleName} (${slotCount} meals, ${proteinSizeLabel}).\n\n`;
   Object.entries(mealCounts).forEach(([name, count]) => {
     message += `- ${count}x ${name}\n`;
   });
-  message += `\nTotal: ${formatPrice(priceCents)}\n\nLet me know how to proceed with payment!`;
+  message += `\nTotal: ${formatPrice(priceCents)}\nThanks!`;
 
   return message;
 }
@@ -38,33 +44,65 @@ export interface CustomOrderDetails {
   macros: { calories: number; protein_g: number; carbs_g: number; fat_g: number } | null;
 }
 
+function formatCompactMacros(macros: { calories: number; protein_g: number; carbs_g: number; fat_g: number }): string {
+  return `${macros.calories}cal ${macros.protein_g}P/${macros.carbs_g}C/${macros.fat_g}F`;
+}
+
+function customBuildFingerprint(build: CustomBuildSummary): string {
+  return [
+    build.proteinName,
+    build.proteinSize,
+    build.carbName ?? '',
+    build.veggieNames.slice().sort().join(','),
+    build.flavorName ?? '',
+    build.sideSauceName ?? '',
+    build.sideSauceSize ?? '',
+    String(build.totalCents),
+    formatCompactMacros(build.macros),
+  ].join('|');
+}
+
+function formatCustomBuildLine(build: CustomBuildSummary, count: number): string {
+  const qty = count > 1 ? `${count}x ` : '';
+  let line = `${qty}${build.proteinName}${build.proteinSize ? ` (${build.proteinSize})` : ''} ${formatPrice(build.totalCents)}`;
+  const bits: string[] = [];
+  if (build.carbName) bits.push(build.carbName);
+  if (build.veggieNames.length) bits.push(build.veggieNames.join(', '));
+  if (build.flavorName) bits.push(build.flavorName);
+  if (build.sideSauceName && build.sideSauceSize) {
+    bits.push(`sauce ${build.sideSauceName} ${build.sideSauceSize}`);
+  }
+  if (bits.length) line += `\n  ${bits.join(' · ')}`;
+  line += `\n  ${formatCompactMacros(build.macros)}`;
+  return line;
+}
+
 export function formatCustomOrder(d: CustomOrderDetails): string {
-  let msg = `Hey Los Meal Preps! I'd like to order a Custom Meal.\n\n`;
-  msg += `Protein: ${d.proteinName}${d.proteinSize ? ` (${d.proteinSize})` : ''} (${formatPrice(d.proteinPriceCents)})\n`;
-  if (d.carbName) msg += `Carb: ${d.carbName}${d.carbUpchargeCents > 0 ? ` (+${formatPrice(d.carbUpchargeCents)})` : ''}\n`;
-  if (d.veggieNames.length) msg += `Veggies: ${d.veggieNames.join(', ')}\n`;
-  if (d.flavorName) msg += `Marinade: ${d.flavorName}\n`;
-  if (d.sideSauceName && d.sideSauceSize) {
-    msg += `Side sauce: ${d.sideSauceName} (${d.sideSauceSize})`;
-    if (d.sideSaucePriceCents > 0) msg += ` (+${formatPrice(d.sideSaucePriceCents)})`;
-    msg += '\n';
-  }
-  msg += `\nTotal: ${formatPrice(d.totalCents)}`;
-  if (d.macros) {
-    msg += `\nMacros: ${d.macros.calories} cal | ${d.macros.protein_g}g protein | ${d.macros.carbs_g}g carbs | ${d.macros.fat_g}g fat`;
-  }
-  msg += `\n\nLet me know how to proceed with payment!`;
+  let msg = `Hey Los Meal Preps! Custom meal order:\n\n`;
+  msg += `${d.proteinName}${d.proteinSize ? ` (${d.proteinSize})` : ''} ${formatPrice(d.totalCents)}\n`;
+  const bits: string[] = [];
+  if (d.carbName) bits.push(d.carbName);
+  if (d.veggieNames.length) bits.push(d.veggieNames.join(', '));
+  if (d.flavorName) bits.push(d.flavorName);
+  if (d.sideSauceName && d.sideSauceSize) bits.push(`sauce ${d.sideSauceName} ${d.sideSauceSize}`);
+  if (bits.length) msg += `${bits.join(' · ')}\n`;
+  if (d.macros) msg += `${formatCompactMacros(d.macros)}\n`;
+  msg += `\nThanks!`;
   return msg;
 }
 
+/**
+ * Compact kitchen-readable cart message for Instagram DMs.
+ */
 export function formatFullOrder(items: CartItem[], discountCents: number = 0, finalTotalCents: number = 0): string {
   const mealSummary = new Map<string, { count: number; unitPriceCents: number }>();
-  let msg = `Hey Los Meal Preps! I'd like to place this order:\n\n`;
+  let msg = `Hey Los Meal Preps! Order:\n\n`;
   let subtotalCents = 0;
 
   const customItems = items.filter((item) => item.kind === 'custom');
   const bundleItems = items.filter((item) => item.kind === 'bundle');
   const addonItems = items.filter((item) => item.kind === 'addon');
+
   items.forEach((item) => {
     if (item.kind === 'meal') {
       const current = mealSummary.get(item.meal.name);
@@ -87,37 +125,31 @@ export function formatFullOrder(items: CartItem[], discountCents: number = 0, fi
   });
 
   if (mealSummary.size > 0) {
-    msg += `Signature Meals:\n`;
+    msg += `Signature:\n`;
     for (const [name, details] of mealSummary.entries()) {
       const lineTotal = details.count * details.unitPriceCents;
-      msg += `- ${details.count}x ${name} (${formatPrice(lineTotal)})\n`;
+      msg += `- ${details.count}x ${name} ${formatPrice(lineTotal)}\n`;
     }
     msg += '\n';
   }
 
   if (customItems.length > 0) {
-    msg += `Custom Meals:\n`;
-    customItems.forEach((item, index) => {
-      const build = item.build;
-      msg += `${index + 1}) ${build.proteinName}${build.proteinSize ? ` (${build.proteinSize})` : ''}`;
-      msg += ` (${formatPrice(build.proteinPriceCents ?? 0)})\n`;
-      if (build.carbName) {
-        const carbExtra = build.carbUpchargeCents && build.carbUpchargeCents > 0
-          ? ` (+${formatPrice(build.carbUpchargeCents)})`
-          : '';
-        msg += `   Carb: ${build.carbName}${carbExtra}\n`;
+    msg += `Custom:\n`;
+    const grouped = new Map<string, { build: CustomBuildSummary; count: number }>();
+    customItems.forEach((item) => {
+      const key = customBuildFingerprint(item.build);
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        grouped.set(key, { build: item.build, count: 1 });
       }
-      if (build.veggieNames.length) msg += `   Veggies: ${build.veggieNames.join(', ')}\n`;
-      if (build.flavorName) msg += `   Marinade: ${build.flavorName}\n`;
-      if (build.sideSauceName && build.sideSauceSize) {
-        const sideSauceExtra = build.sideSaucePriceCents && build.sideSaucePriceCents > 0
-          ? ` (+${formatPrice(build.sideSaucePriceCents)})`
-          : '';
-        msg += `   Side sauce: ${build.sideSauceName} (${build.sideSauceSize})${sideSauceExtra}\n`;
-      }
-      msg += `   Meal total: ${formatPrice(build.totalCents)}\n`;
-      msg += `   Macros: ${build.macros.calories} cal | ${build.macros.protein_g}g protein | ${build.macros.carbs_g}g carbs | ${build.macros.fat_g}g fat\n`;
     });
+    let index = 1;
+    for (const { build, count } of grouped.values()) {
+      msg += `${index}) ${formatCustomBuildLine(build, count)}\n`;
+      index += 1;
+    }
     msg += '\n';
   }
 
@@ -125,15 +157,14 @@ export function formatFullOrder(items: CartItem[], discountCents: number = 0, fi
     msg += `Bundles:\n`;
     bundleItems.forEach((item, index) => {
       const bundle = item.bundle;
-      msg += `${index + 1}) ${bundle.bundleName} (${bundle.slotCount} meals, ${bundle.proteinSizeLabel} protein)\n`;
+      msg += `${index + 1}) ${bundle.bundleName} · ${bundle.slotCount} meals · ${bundle.proteinSizeLabel} ${formatPrice(bundle.totalCents)}\n`;
       const bundleMealCounts = bundle.mealNames.reduce((acc, name) => {
         acc[name] = (acc[name] ?? 0) + 1;
         return acc;
       }, {} as Record<string, number>);
       Object.entries(bundleMealCounts).forEach(([name, count]) => {
-        msg += `   - ${count}x ${name}\n`;
+        msg += `  - ${count}x ${name}\n`;
       });
-      msg += `   Bundle total: ${formatPrice(bundle.totalCents)}\n`;
     });
     msg += '\n';
   }
@@ -141,18 +172,95 @@ export function formatFullOrder(items: CartItem[], discountCents: number = 0, fi
   if (addonItems.length > 0) {
     msg += `Add-ons:\n`;
     addonItems.forEach((item) => {
-      msg += `- ${item.addon.name} (${formatPrice(item.addon.priceCents)})\n`;
+      msg += `- ${item.addon.name} ${formatPrice(item.addon.priceCents)}\n`;
     });
     msg += '\n';
   }
 
   if (discountCents > 0) {
     msg += `Subtotal: ${formatPrice(subtotalCents)}\n`;
-    msg += `Sauce Promo Discount: -${formatPrice(discountCents)}\n`;
+    msg += `Sauce promo: -${formatPrice(discountCents)}\n`;
   }
 
   const displayTotal = finalTotalCents || subtotalCents;
-  msg += `Order total: ${formatPrice(displayTotal)}\n\n`;
-  msg += `Let me know how to proceed with payment!`;
+  msg += `Total: ${formatPrice(displayTotal)}\nThanks!`;
   return msg;
+}
+
+function partHeader(index: number, total: number): string {
+  return `Part ${index}/${total}\n`;
+}
+
+/**
+ * Split a message into Instagram-safe paste parts on line boundaries.
+ * Each part is at most `softLimit` characters including the Part i/n header.
+ */
+export function splitOrderForInstagram(
+  text: string,
+  softLimit: number = INSTAGRAM_DM_SOFT_LIMIT,
+): string[] {
+  if (text.length <= softLimit) return [text];
+
+  // Estimate part count, then refine so headers fit.
+  let partCount = Math.ceil(text.length / (softLimit - 16));
+  let parts: string[] = [];
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const maxBody = softLimit - partHeader(partCount, partCount).length;
+    parts = [];
+    const lines = text.split('\n');
+    let current = '';
+
+    for (const line of lines) {
+      const candidate = current.length === 0 ? line : `${current}\n${line}`;
+      if (candidate.length <= maxBody) {
+        current = candidate;
+        continue;
+      }
+
+      if (current.length > 0) {
+        parts.push(current);
+        current = '';
+      }
+
+      if (line.length <= maxBody) {
+        current = line;
+        continue;
+      }
+
+      // Hard-split an oversized single line.
+      let remaining = line;
+      while (remaining.length > maxBody) {
+        parts.push(remaining.slice(0, maxBody));
+        remaining = remaining.slice(maxBody);
+      }
+      current = remaining;
+    }
+
+    if (current.length > 0) parts.push(current);
+
+    if (parts.length === partCount) break;
+    partCount = Math.max(parts.length, partCount + 1);
+  }
+
+  if (parts.length === 1) return parts;
+
+  return parts.map((body, i) => `${partHeader(i + 1, parts.length)}${body}`);
+}
+
+export function buildInstagramOrderParts(
+  items: CartItem[],
+  discountCents: number = 0,
+  finalTotalCents: number = 0,
+  softLimit: number = INSTAGRAM_DM_SOFT_LIMIT,
+): string[] {
+  return splitOrderForInstagram(formatFullOrder(items, discountCents, finalTotalCents), softLimit);
+}
+
+export function getOrderCharCount(
+  items: CartItem[],
+  discountCents: number = 0,
+  finalTotalCents: number = 0,
+): number {
+  return formatFullOrder(items, discountCents, finalTotalCents).length;
 }

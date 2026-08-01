@@ -87,4 +87,18 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  html.has-mobile-cart-bar .main-with-cart-clearance {
+    padding-bottom: var(--mobile-cart-bar-offset, 0px);
+  }
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

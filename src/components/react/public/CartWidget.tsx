@@ -2,9 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { formatPrice } from '@/lib/pricing';
-import { formatFullOrder } from '@/lib/format-order';
+import {
+  INSTAGRAM_DM_CHAR_LIMIT,
+  INSTAGRAM_DM_SOFT_LIMIT,
+  buildInstagramOrderParts,
+  getOrderCharCount,
+} from '@/lib/format-order';
 import { repriceCartItems } from '@/lib/reprice-cart';
 import { parseSauceConfig, calculateCartTotals } from '@/lib/cart-math';
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/scroll-lock';
 import CartAddonsUpsell from './CartAddonsUpsell';
 
 interface Props {
@@ -16,6 +22,13 @@ interface ToastState {
   title: string;
   message: string;
   tone: 'success' | 'warning' | 'error';
+}
+
+interface HandoffState {
+  parts: string[];
+  partIndex: number;
+  priceWasUpdated: boolean;
+  priceRefreshFailed: boolean;
 }
 
 async function copyOrderText(text: string): Promise<boolean> {
@@ -44,6 +57,18 @@ async function copyOrderText(text: string): Promise<boolean> {
   }
 }
 
+function navigateReservedWindow(igWindow: Window | null, igHandle: string): void {
+  const igUrl = `https://ig.me/m/${igHandle}`;
+  if (igWindow && !igWindow.closed) {
+    igWindow.location.href = igUrl;
+    return;
+  }
+  const opened = window.open(igUrl, '_blank');
+  if (!opened) {
+    window.location.assign(igUrl);
+  }
+}
+
 export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
   const { items, removeItem, clearItems, replaceItems } = useCartStore();
   const [open, setOpen] = useState(false);
@@ -51,6 +76,7 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
   const [allowMobileStickyBar, setAllowMobileStickyBar] = useState(true);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [redirecting, setRedirecting] = useState(false);
+  const [handoff, setHandoff] = useState<HandoffState | null>(null);
 
   const sauceConfig = useMemo(() => parseSauceConfig(saucePricingConfigRaw), [saucePricingConfigRaw]);
 
@@ -60,6 +86,23 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
   );
 
   const itemCount = items.length;
+  const showStickyBar = isMounted && !open && itemCount > 0 && allowMobileStickyBar && !handoff;
+
+  const orderCharCount = useMemo(
+    () => (items.length === 0 ? 0 : getOrderCharCount(items, discountCents, totalCents)),
+    [items, discountCents, totalCents],
+  );
+  const orderPartsPreview = useMemo(
+    () => (items.length === 0 ? [] : buildInstagramOrderParts(items, discountCents, totalCents)),
+    [items, discountCents, totalCents],
+  );
+  const partCount = orderPartsPreview.length;
+  const charTone =
+    orderCharCount > INSTAGRAM_DM_SOFT_LIMIT
+      ? 'text-rose-600'
+      : orderCharCount > INSTAGRAM_DM_SOFT_LIMIT * 0.85
+        ? 'text-amber-600'
+        : 'text-[var(--color-fg-muted)]';
 
   useEffect(() => {
     // Avoid portal usage before mount.
@@ -70,23 +113,27 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open && !handoff) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key === 'Escape') {
+        if (handoff) return;
+        setOpen(false);
+      }
     };
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
     window.addEventListener('keydown', onKeyDown);
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      unlockBodyScroll();
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [open]);
+  }, [open, handoff]);
 
   useEffect(() => {
-    const closeForMenuOpen = () => setOpen(false);
+    const closeForMenuOpen = () => {
+      if (!handoff) setOpen(false);
+    };
     const openCart = () => setOpen(true);
     window.addEventListener('mobile-menu:open', closeForMenuOpen);
     window.addEventListener('cart:open:request', openCart);
@@ -94,7 +141,7 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
       window.removeEventListener('mobile-menu:open', closeForMenuOpen);
       window.removeEventListener('cart:open:request', openCart);
     };
-  }, []);
+  }, [handoff]);
 
   useEffect(() => {
     if (!open) return;
@@ -107,84 +154,130 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  const handleSendOrder = async () => {
-    if (items.length === 0) return;
+  useEffect(() => {
+    if (!showStickyBar) {
+      document.documentElement.style.removeProperty('--mobile-cart-bar-offset');
+      document.documentElement.classList.remove('has-mobile-cart-bar');
+      return;
+    }
+    document.documentElement.style.setProperty(
+      '--mobile-cart-bar-offset',
+      'calc(4.5rem + env(safe-area-inset-bottom, 0px))',
+    );
+    document.documentElement.classList.add('has-mobile-cart-bar');
+    return () => {
+      document.documentElement.style.removeProperty('--mobile-cart-bar-offset');
+      document.documentElement.classList.remove('has-mobile-cart-bar');
+    };
+  }, [showStickyBar]);
 
-    const clickStartedAt = Date.now();
-    const igUrl = `https://ig.me/m/${igHandle}`;
-    // Reserve a tab synchronously during the tap — required on mobile Safari before any await.
-    const igWindow = window.open('about:blank', '_blank');
+  const finishHandoff = () => {
+    clearItems();
+    setHandoff(null);
+    setOpen(false);
+    setRedirecting(false);
+  };
+
+  const handleSendOrder = async () => {
+    if (items.length === 0 || redirecting || handoff) return;
+
     setRedirecting(true);
 
-    // #region agent log
-    fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'redirect-fix',hypothesisId:'H1-H2',location:'CartWidget.tsx:handleSendOrder:sync-window-open',message:'Reserved Instagram tab on click',data:{igWindowOpened:!!igWindow,igWindowClosed:igWindow?.closed??null,userActivationActive:navigator.userActivation?.isActive,protocol:window.location.protocol,host:window.location.host},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
+    let workingItems = items;
+    let workingDiscount = discountCents;
+    let workingTotal = totalCents;
+    let priceWasUpdated = false;
+    let priceRefreshFailed = false;
 
-    let orderText = formatFullOrder(items, discountCents, totalCents);
+    try {
+      const repriced = await repriceCartItems(items);
+      if (repriced.hadPriceChanges) {
+        replaceItems(repriced.items);
+        workingItems = repriced.items;
+        priceWasUpdated = true;
+        const updatedTotals = calculateCartTotals(repriced.items, sauceConfig);
+        workingDiscount = updatedTotals.discountCents;
+        workingTotal = updatedTotals.totalCents;
+      }
+    } catch {
+      priceRefreshFailed = true;
+    }
 
-    const copied = await copyOrderText(orderText);
+    const parts = buildInstagramOrderParts(workingItems, workingDiscount, workingTotal);
+    setHandoff({
+      parts,
+      partIndex: 0,
+      priceWasUpdated,
+      priceRefreshFailed,
+    });
+    setRedirecting(false);
+  };
+
+  const handleCopyHandoffPart = async () => {
+    if (!handoff) return;
+    const { parts, partIndex } = handoff;
+    if (partIndex >= parts.length) return;
+
+    const part = parts[partIndex];
+    // Reserve IG tab on the first part tap before awaiting clipboard.
+    const igWindow = partIndex === 0 ? window.open('about:blank', '_blank') : null;
+
+    const copied = await copyOrderText(part);
     if (!copied) {
       igWindow?.close();
-      setRedirecting(false);
-      // #region agent log
-      fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'redirect-fix',hypothesisId:'H1-H4',location:'CartWidget.tsx:handleSendOrder:immediate-clipboard-failed',message:'Immediate clipboard copy failed',data:{elapsedMs:Date.now()-clickStartedAt,userActivationActive:navigator.userActivation?.isActive,isSecureContext:window.isSecureContext,hasClipboard:!!navigator.clipboard},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       setToast({
         title: 'Clipboard blocked',
-        message: 'Could not copy automatically. Please copy your order from the cart and paste it in Instagram.',
+        message: 'Could not copy automatically. Long-press the order text above to select and copy, then paste in Instagram.',
         tone: 'error',
       });
       return;
     }
 
-    let priceWasUpdated = false;
-    let priceRefreshFailed = false;
-    try {
-      const repriced = await repriceCartItems(items);
-      if (repriced.hadPriceChanges) {
-        replaceItems(repriced.items);
-        priceWasUpdated = true;
-        const updatedTotals = calculateCartTotals(repriced.items, sauceConfig);
-        orderText = formatFullOrder(repriced.items, updatedTotals.discountCents, updatedTotals.totalCents);
-        await copyOrderText(orderText);
-      }
-    } catch (repriceError) {
-      priceRefreshFailed = true;
-      // #region agent log
-      fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'redirect-fix',hypothesisId:'H5',location:'CartWidget.tsx:handleSendOrder:reprice-catch',message:'Reprice failed after clipboard copy',data:{errorName:repriceError instanceof Error?repriceError.name:'unknown',errorMessage:repriceError instanceof Error?repriceError.message:String(repriceError),elapsedMs:Date.now()-clickStartedAt},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
-    }
+    const nextIndex = partIndex + 1;
+    const isLastPart = nextIndex >= parts.length;
+    const isMultipart = parts.length > 1;
 
-    let redirectMethod: 'preopened-tab' | 'window-open' | 'same-tab-fallback' = 'same-tab-fallback';
-    if (igWindow && !igWindow.closed) {
-      igWindow.location.href = igUrl;
-      redirectMethod = 'preopened-tab';
-    } else {
-      const opened = window.open(igUrl, '_blank');
-      if (opened) {
-        redirectMethod = 'window-open';
-      } else {
-        window.location.assign(igUrl);
-        redirectMethod = 'same-tab-fallback';
-      }
+    if (partIndex === 0) {
+      navigateReservedWindow(igWindow, igHandle);
     }
-
-    // #region agent log
-    fetch('http://127.0.0.1:7685/ingest/33be0550-dd25-4d32-aac7-eb01933db923',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'a94fb7'},body:JSON.stringify({sessionId:'a94fb7',runId:'redirect-fix',hypothesisId:'H1-H3',location:'CartWidget.tsx:handleSendOrder:redirect',message:'Instagram redirect attempted',data:{redirectMethod,elapsedMs:Date.now()-clickStartedAt,userActivationActive:navigator.userActivation?.isActive,igUrl},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
 
     setToast({
-      title: 'Order copied to clipboard',
-      message: priceRefreshFailed
-        ? 'Could not refresh latest prices. Copied order uses current cart values. Opening Instagram…'
-        : priceWasUpdated
-          ? 'Latest prices were applied. Opening Instagram — paste your order in the DM and send.'
-          : 'Opening Instagram — paste your order in the DM and send.',
-      tone: priceRefreshFailed ? 'warning' : 'success',
+      title: isMultipart
+        ? isLastPart
+          ? 'All parts copied'
+          : `Part ${partIndex + 1} of ${parts.length} copied`
+        : 'Order copied',
+      message: isMultipart
+        ? isLastPart
+          ? 'Paste the last part in the same Instagram DM, then tap Send.'
+          : partIndex === 0
+            ? 'Paste in Instagram, then return here for the next part.'
+            : 'Paste this part in the same DM, then copy the next part.'
+        : 'In Instagram: paste into the DM, then tap Send.',
+      tone: handoff.priceRefreshFailed && partIndex === 0 ? 'warning' : 'success',
     });
-    clearItems();
-    setOpen(false);
-    setRedirecting(false);
+    setHandoff({ ...handoff, partIndex: nextIndex });
+  };
+
+  const handleCopyAgain = async () => {
+    if (!handoff) return;
+    const { parts, partIndex } = handoff;
+    const textIndex = Math.min(partIndex, parts.length - 1);
+    const part = parts[textIndex];
+    const copied = await copyOrderText(part);
+    if (!copied) {
+      setToast({
+        title: 'Clipboard blocked',
+        message: 'Long-press the order text above to select and copy, then paste in Instagram.',
+        tone: 'error',
+      });
+      return;
+    }
+    setToast({
+      title: parts.length > 1 ? `Part ${textIndex + 1} copied again` : 'Order copied again',
+      message: 'In Instagram: paste into the DM, then tap Send.',
+      tone: 'success',
+    });
   };
 
   return (
@@ -192,7 +285,7 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="relative inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[var(--color-surface-sunken)] text-[var(--color-brand)] hover:bg-[var(--color-surface-sunken)] transition-colors"
+        className="relative inline-flex items-center justify-center min-h-[44px] min-w-[44px] w-11 h-11 sm:w-10 sm:h-10 rounded-full border border-[var(--color-surface-sunken)] text-[var(--color-brand)] hover:bg-[var(--color-surface-sunken)] transition-colors"
         aria-expanded={open}
         aria-controls="cart-drawer"
         aria-label="Open cart"
@@ -209,12 +302,12 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
         )}
       </button>
 
-      {isMounted && !open && itemCount > 0 && allowMobileStickyBar && createPortal(
+      {showStickyBar && createPortal(
         <button
           type="button"
           onClick={() => setOpen(true)}
           className="sm:hidden fixed left-4 right-4 z-[110] rounded-[var(--radius-pill)] bg-[var(--color-brand)] text-white shadow-[var(--shadow-rail)] px-4 py-3 flex items-center justify-between"
-          style={{ bottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+          style={{ bottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
           aria-label="View cart"
         >
           <span className="text-[13px] font-semibold">{itemCount} item{itemCount === 1 ? '' : 's'}</span>
@@ -228,7 +321,9 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
           <div
             className="absolute inset-0 bg-black/35"
             aria-hidden="true"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              if (!handoff) setOpen(false);
+            }}
           />
           <aside
             id="cart-drawer"
@@ -243,156 +338,298 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
               </h2>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-full text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)] transition-colors"
+                onClick={() => {
+                  if (!handoff) setOpen(false);
+                }}
+                disabled={Boolean(handoff)}
+                className="h-11 w-11 inline-flex items-center justify-center rounded-full text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)] transition-colors disabled:opacity-40"
                 aria-label="Close cart"
               >
                 X
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-3">
-              {items.length === 0 ? (
-                <p className="text-[14px] text-[var(--color-fg-muted)]">Your cart is empty.</p>
-              ) : (
-                items.map((item) => (
-                  <div key={item.cartId} className="border border-[var(--color-surface-sunken)] rounded-[var(--radius-card)] p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        {item.kind === 'meal' ? (
-                          <>
-                            <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">{item.meal.name}</p>
-                            <p className="text-[12px] text-[var(--color-fg-muted)]">Signature meal</p>
-                            <p className="text-[12px] text-[var(--color-brand)] mt-1">
-                              {formatPrice(item.meal.base_price_cents)}
-                            </p>
-                          </>
-                        ) : item.kind === 'bundle' ? (
-                          <>
-                            <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">{item.bundle.bundleName}</p>
-                            <p className="text-[12px] text-[var(--color-fg-muted)]">
-                              Bundle · {item.bundle.slotCount} meals · {item.bundle.proteinSizeLabel} protein
-                            </p>
-                            <p className="text-[12px] text-[var(--color-fg-muted)] mt-1 break-words">
-                              {Object.entries(
-                                item.bundle.mealNames.reduce((acc, name) => {
-                                  acc[name] = (acc[name] ?? 0) + 1;
-                                  return acc;
-                                }, {} as Record<string, number>),
-                              ).map(([name, count], idx) => (
-                                <React.Fragment key={`${item.cartId}-${name}`}>
-                                  {idx > 0 ? ' · ' : ''}
-                                  {count}x {name}
-                                </React.Fragment>
-                              ))}
-                            </p>
-                            <p className="text-[12px] text-[var(--color-brand)] mt-1">
-                              {formatPrice(item.bundle.totalCents)}
-                            </p>
-                          </>
-                        ) : item.kind === 'custom' ? (
-                          <>
-                            <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">
-                              {item.build.proteinName}{item.build.proteinSize ? ` (${item.build.proteinSize})` : ''}
-                            </p>
-                            <p className="text-[12px] text-[var(--color-fg-muted)]">Custom meal</p>
-                            <p className="text-[12px] text-[var(--color-fg-muted)] mt-1 break-words">
-                              {item.build.macros.calories} cal · {item.build.macros.protein_g}g P · {item.build.macros.carbs_g}g C · {item.build.macros.fat_g}g F
-                            </p>
-                            <p className="text-[12px] text-[var(--color-brand)] mt-1">
-                              {formatPrice(item.build.totalCents)}
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">
-                              {item.addon.name}
-                            </p>
-                            <p className="text-[12px] text-[var(--color-fg-muted)]">Add-on</p>
-                            <p className="text-[12px] text-[var(--color-brand)] mt-1">
-                              {formatPrice(item.addon.priceCents)}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.cartId)}
-                        className="shrink-0 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
+            {handoff ? (
+              <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-5 space-y-4">
+                <div className="rounded-[var(--radius-card)] border border-[var(--color-surface-sunken)] bg-[var(--color-surface-elevated)] p-4 space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-[14px] font-semibold text-[var(--color-fg)]">
+                      {handoff.parts.length > 1
+                        ? `Instagram needs ${handoff.parts.length} messages`
+                        : 'Send your order on Instagram'}
+                    </p>
+                    {handoff.parts.length > 1 && (
+                      <p className="text-[13px] text-[var(--color-fg-muted)] leading-relaxed">
+                        Instagram DMs max out at {INSTAGRAM_DM_CHAR_LIMIT.toLocaleString()} characters. Copy each part in order and paste into the same chat.
+                      </p>
+                    )}
                   </div>
-                ))
-              )}
-              
-              <CartAddonsUpsell sauceConfig={sauceConfig} />
-            </div>
+
+                  {(handoff.priceWasUpdated || handoff.priceRefreshFailed) && (
+                    <p
+                      className={`text-[12px] leading-relaxed rounded-[var(--radius-input)] px-3 py-2 ${
+                        handoff.priceRefreshFailed
+                          ? 'bg-amber-50 text-amber-800 border border-amber-100'
+                          : 'bg-emerald-50 text-emerald-800 border border-emerald-100'
+                      }`}
+                    >
+                      {handoff.priceRefreshFailed
+                        ? 'Could not refresh latest prices. This order uses your current cart values.'
+                        : 'Latest prices were applied to this order.'}
+                    </p>
+                  )}
+
+                  <ol className="space-y-2 text-[13px] text-[var(--color-fg)] list-none">
+                    <li className="flex gap-3">
+                      <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-surface-sunken)] text-[12px] font-bold text-[var(--color-brand)]">
+                        1
+                      </span>
+                      <span className="leading-relaxed pt-0.5">
+                        <span className="font-semibold">Copy your order</span>
+                        {' — '}tap the button below
+                        {handoff.partIndex > 0 ? ' ✓' : ''}
+                      </span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-surface-sunken)] text-[12px] font-bold text-[var(--color-brand)]">
+                        2
+                      </span>
+                      <span className="leading-relaxed pt-0.5">
+                        <span className="font-semibold">Instagram opens</span>
+                        {' — '}to your DM with @{igHandle}
+                        {handoff.partIndex > 0 ? ' ✓' : ''}
+                      </span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-surface-sunken)] text-[12px] font-bold text-[var(--color-brand)]">
+                        3
+                      </span>
+                      <span className="leading-relaxed pt-0.5">
+                        <span className="font-semibold">Paste and Send</span>
+                        {' — '}Cmd/Ctrl+V, or long-press → Paste on phone
+                      </span>
+                    </li>
+                  </ol>
+
+                  {handoff.parts.length > 1 && (
+                    <p className="text-[13px] font-medium text-[var(--color-brand)]">
+                      {handoff.partIndex >= handoff.parts.length
+                        ? `All ${handoff.parts.length} parts copied — paste the last one, then tap Send`
+                        : `Ready: Part ${handoff.partIndex + 1} of ${handoff.parts.length}`}
+                    </p>
+                  )}
+
+                  <pre className="text-[11px] leading-relaxed whitespace-pre-wrap break-words max-h-48 overflow-y-auto rounded-[var(--radius-input)] bg-[var(--color-surface-sunken)] p-3 text-[var(--color-fg-muted)] select-text">
+                    {handoff.parts[Math.min(handoff.partIndex, handoff.parts.length - 1)]}
+                  </pre>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-3">
+                {items.length === 0 ? (
+                  <p className="text-[14px] text-[var(--color-fg-muted)]">Your cart is empty.</p>
+                ) : (
+                  items.map((item) => (
+                    <div key={item.cartId} className="border border-[var(--color-surface-sunken)] rounded-[var(--radius-card)] p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          {item.kind === 'meal' ? (
+                            <>
+                              <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">{item.meal.name}</p>
+                              <p className="text-[12px] text-[var(--color-fg-muted)]">Signature meal</p>
+                              <p className="text-[12px] text-[var(--color-brand)] mt-1">
+                                {formatPrice(item.meal.base_price_cents)}
+                              </p>
+                            </>
+                          ) : item.kind === 'bundle' ? (
+                            <>
+                              <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">{item.bundle.bundleName}</p>
+                              <p className="text-[12px] text-[var(--color-fg-muted)]">
+                                Bundle · {item.bundle.slotCount} meals · {item.bundle.proteinSizeLabel} protein
+                              </p>
+                              <p className="text-[12px] text-[var(--color-fg-muted)] mt-1 break-words">
+                                {Object.entries(
+                                  item.bundle.mealNames.reduce((acc, name) => {
+                                    acc[name] = (acc[name] ?? 0) + 1;
+                                    return acc;
+                                  }, {} as Record<string, number>),
+                                ).map(([name, count], idx) => (
+                                  <React.Fragment key={`${item.cartId}-${name}`}>
+                                    {idx > 0 ? ' · ' : ''}
+                                    {count}x {name}
+                                  </React.Fragment>
+                                ))}
+                              </p>
+                              <p className="text-[12px] text-[var(--color-brand)] mt-1">
+                                {formatPrice(item.bundle.totalCents)}
+                              </p>
+                            </>
+                          ) : item.kind === 'custom' ? (
+                            <>
+                              <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">
+                                {item.build.proteinName}{item.build.proteinSize ? ` (${item.build.proteinSize})` : ''}
+                              </p>
+                              <p className="text-[12px] text-[var(--color-fg-muted)]">Custom meal</p>
+                              <p className="text-[12px] text-[var(--color-fg-muted)] mt-1 break-words">
+                                {item.build.macros.calories} cal · {item.build.macros.protein_g}g P · {item.build.macros.carbs_g}g C · {item.build.macros.fat_g}g F
+                              </p>
+                              <p className="text-[12px] text-[var(--color-brand)] mt-1">
+                                {formatPrice(item.build.totalCents)}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-[14px] font-semibold text-[var(--color-fg)] break-words">
+                                {item.addon.name}
+                              </p>
+                              <p className="text-[12px] text-[var(--color-fg-muted)]">Add-on</p>
+                              <p className="text-[12px] text-[var(--color-brand)] mt-1">
+                                {formatPrice(item.addon.priceCents)}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.cartId)}
+                          className="shrink-0 min-h-[44px] px-2 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                <CartAddonsUpsell sauceConfig={sauceConfig} />
+              </div>
+            )}
 
             <div
               className="border-t border-[var(--color-surface-sunken)] px-4 sm:px-5 pt-4 space-y-3 bg-[var(--color-surface-base)]"
-              style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+              style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
             >
-              <div className="flex justify-between items-center">
-                <span className="text-[14px] text-[var(--color-fg-muted)]">Subtotal</span>
-                <span className="text-[16px] font-medium text-[var(--color-fg)]">
-                  {formatPrice(subtotalCents)}
-                </span>
-              </div>
-              {discountCents > 0 ? (
-                <div className="flex justify-between items-center text-emerald-600">
-                  <span className="text-[14px]">Sauce Promo Discount</span>
-                  <span className="text-[16px] font-medium">
-                    -{formatPrice(discountCents)}
-                  </span>
-                </div>
+              {handoff ? (
+                <>
+                  {handoff.partIndex >= handoff.parts.length ? (
+                    <button
+                      type="button"
+                      onClick={finishHandoff}
+                      className="w-full bg-[var(--color-brand)] text-white py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[48px]"
+                    >
+                      I pasted and sent
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleCopyHandoffPart}
+                      className="w-full bg-[var(--color-brand)] text-white py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[48px]"
+                    >
+                      {handoff.parts.length === 1
+                        ? 'Copy order & open Instagram'
+                        : handoff.partIndex === 0
+                          ? `Copy part 1 of ${handoff.parts.length} & open Instagram`
+                          : `Copy part ${handoff.partIndex + 1} of ${handoff.parts.length}`}
+                    </button>
+                  )}
+                  {handoff.partIndex > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleCopyAgain}
+                      className="w-full py-2 text-[13px] font-medium text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] transition-colors min-h-[44px]"
+                    >
+                      Copy again
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHandoff(null);
+                      setRedirecting(false);
+                    }}
+                    className="w-full py-2 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors"
+                  >
+                    Cancel handoff
+                  </button>
+                  <p className="text-[11px] text-[var(--color-fg-subtle)] text-center">
+                    In Instagram: paste into the DM, then tap Send.
+                    {handoff.parts.length > 1 ? ' Paste each part in order in the same chat.' : ''}
+                  </p>
+                </>
               ) : (
-                eligibleSpendCents < sauceConfig.free_threshold_cents && sauceConfig.free_threshold_cents > 0 && (
-                  <div className="mt-2 p-3 bg-emerald-50 rounded-[var(--radius-base)] border border-emerald-100 flex items-center justify-between">
-                    <span className="text-[12px] font-medium text-emerald-800">
-                      Add {formatPrice(sauceConfig.free_threshold_cents - eligibleSpendCents)} more to unlock a FREE sauce!
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] text-[var(--color-fg-muted)]">Subtotal</span>
+                    <span className="text-[16px] font-medium text-[var(--color-fg)]">
+                      {formatPrice(subtotalCents)}
                     </span>
-                    <div className="w-16 h-1.5 bg-emerald-200 rounded-full overflow-hidden shrink-0 ml-3">
-                      <div 
-                        className="h-full bg-emerald-500 rounded-full" 
-                        style={{ width: `${Math.min(100, (eligibleSpendCents / sauceConfig.free_threshold_cents) * 100)}%` }}
-                      />
-                    </div>
                   </div>
-                )
+                  {discountCents > 0 ? (
+                    <div className="flex justify-between items-center text-emerald-600">
+                      <span className="text-[14px]">Sauce Promo Discount</span>
+                      <span className="text-[16px] font-medium">
+                        -{formatPrice(discountCents)}
+                      </span>
+                    </div>
+                  ) : (
+                    eligibleSpendCents < sauceConfig.free_threshold_cents && sauceConfig.free_threshold_cents > 0 && (
+                      <div className="mt-2 p-3 bg-emerald-50 rounded-[var(--radius-base)] border border-emerald-100 flex items-center justify-between">
+                        <span className="text-[12px] font-medium text-emerald-800">
+                          Add {formatPrice(sauceConfig.free_threshold_cents - eligibleSpendCents)} more to unlock a FREE sauce!
+                        </span>
+                        <div className="w-16 h-1.5 bg-emerald-200 rounded-full overflow-hidden shrink-0 ml-3">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full"
+                            style={{ width: `${Math.min(100, (eligibleSpendCents / sauceConfig.free_threshold_cents) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  )}
+
+                  <div className="flex justify-between items-center pt-2 mt-2 border-t border-[var(--color-surface-sunken)]">
+                    <span className="text-[14px] font-bold text-[var(--color-fg)]">Total</span>
+                    <span className="text-[24px] font-[family-name:var(--font-display)] font-bold text-[var(--color-brand)]">
+                      {formatPrice(totalCents)}
+                    </span>
+                  </div>
+
+                  {items.length > 0 && (
+                    <p className={`text-[11px] ${charTone}`}>
+                      Instagram message: {orderCharCount.toLocaleString()} / {INSTAGRAM_DM_CHAR_LIMIT.toLocaleString()}
+                      {partCount > 1 ? ` · will send as ${partCount} parts` : ''}
+                    </p>
+                  )}
+
+                  <p className="text-[12px] text-[var(--color-fg-muted)]">
+                    New clients may order a single meal. Returning clients should order at least $60 total or 5 meals.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={handleSendOrder}
+                    disabled={items.length === 0 || redirecting}
+                    className="w-full bg-[var(--color-brand)] disabled:bg-[var(--color-surface-sunken)] disabled:text-[var(--color-fg-subtle)] text-white py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[48px]"
+                  >
+                    {redirecting
+                      ? 'Preparing…'
+                      : partCount > 1
+                        ? `Prepare Instagram order (${partCount} parts)`
+                        : 'Prepare Instagram order'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearItems}
+                    disabled={items.length === 0}
+                    className="w-full py-2 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors disabled:opacity-50"
+                  >
+                    Clear cart
+                  </button>
+                  <p className="text-[11px] text-[var(--color-fg-subtle)] text-center">
+                    Next you’ll paste the order into the Instagram DM and send it. We can’t paste for you.
+                  </p>
+                </>
               )}
-
-              <div className="flex justify-between items-center pt-2 mt-2 border-t border-[var(--color-surface-sunken)]">
-                <span className="text-[14px] font-bold text-[var(--color-fg)]">Total</span>
-                <span className="text-[24px] font-[family-name:var(--font-display)] font-bold text-[var(--color-brand)]">
-                  {formatPrice(totalCents)}
-                </span>
-              </div>
-
-              <p className="text-[12px] text-[var(--color-fg-muted)]">
-                New clients may order a single meal. Returning clients should order at least $60 total or 5 meals.
-              </p>
-
-              <button
-                type="button"
-                onClick={handleSendOrder}
-                disabled={items.length === 0 || redirecting}
-                className="w-full bg-[var(--color-brand)] disabled:bg-[var(--color-surface-sunken)] disabled:text-[var(--color-fg-subtle)] text-white py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors"
-              >
-                {redirecting ? 'Opening Instagram...' : 'Send Order on Instagram'}
-              </button>
-              <button
-                type="button"
-                onClick={clearItems}
-                disabled={items.length === 0}
-                className="w-full py-2 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors disabled:opacity-50"
-              >
-                Clear cart
-              </button>
-              <p className="text-[11px] text-[var(--color-fg-subtle)] text-center">
-                Order is copied to clipboard before Instagram opens.
-              </p>
             </div>
           </aside>
         </div>,
@@ -403,13 +640,14 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
         <div
           role="status"
           aria-live="polite"
-          className={`fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-[390px] z-[140] rounded-[var(--radius-card)] border px-4 py-3 shadow-[var(--shadow-rail)] ${
+          className={`fixed left-4 right-4 sm:left-auto sm:right-4 sm:w-[390px] z-[140] rounded-[var(--radius-card)] border px-4 py-3 shadow-[var(--shadow-rail)] ${
             toast.tone === 'success'
               ? 'border-emerald-200 bg-emerald-50'
               : toast.tone === 'warning'
                 ? 'border-amber-200 bg-amber-50'
                 : 'border-rose-200 bg-rose-50'
           }`}
+          style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
         >
           <div className="flex items-start gap-3">
             <span
