@@ -2,12 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { formatPrice } from '@/lib/pricing';
-import {
-  INSTAGRAM_DM_CHAR_LIMIT,
-  INSTAGRAM_DM_SOFT_LIMIT,
-  buildInstagramOrderParts,
-  getOrderCharCount,
-} from '@/lib/format-order';
+import { buildInstagramOrderParts } from '@/lib/format-order';
 import { repriceCartItems } from '@/lib/reprice-cart';
 import { parseSauceConfig, calculateCartTotals } from '@/lib/cart-math';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scroll-lock';
@@ -88,21 +83,10 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
   const itemCount = items.length;
   const showStickyBar = isMounted && !open && itemCount > 0 && allowMobileStickyBar && !handoff;
 
-  const orderCharCount = useMemo(
-    () => (items.length === 0 ? 0 : getOrderCharCount(items, discountCents, totalCents)),
+  const partCount = useMemo(
+    () => (items.length === 0 ? 0 : buildInstagramOrderParts(items, discountCents, totalCents).length),
     [items, discountCents, totalCents],
   );
-  const orderPartsPreview = useMemo(
-    () => (items.length === 0 ? [] : buildInstagramOrderParts(items, discountCents, totalCents)),
-    [items, discountCents, totalCents],
-  );
-  const partCount = orderPartsPreview.length;
-  const charTone =
-    orderCharCount > INSTAGRAM_DM_SOFT_LIMIT
-      ? 'text-rose-600'
-      : orderCharCount > INSTAGRAM_DM_SOFT_LIMIT * 0.85
-        ? 'text-amber-600'
-        : 'text-[var(--color-fg-muted)]';
 
   useEffect(() => {
     // Avoid portal usage before mount.
@@ -345,7 +329,10 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
                 className="h-11 w-11 inline-flex items-center justify-center rounded-full text-[var(--color-fg-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-fg)] transition-colors disabled:opacity-40"
                 aria-label="Close cart"
               >
-                X
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
               </button>
             </div>
 
@@ -354,13 +341,11 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
                 <div className="rounded-[var(--radius-card)] border border-[var(--color-surface-sunken)] bg-[var(--color-surface-elevated)] p-4 space-y-4">
                   <div className="space-y-1">
                     <p className="text-[14px] font-semibold text-[var(--color-fg)]">
-                      {handoff.parts.length > 1
-                        ? `Instagram needs ${handoff.parts.length} messages`
-                        : 'Send your order on Instagram'}
+                      Send your order on Instagram
                     </p>
                     {handoff.parts.length > 1 && (
                       <p className="text-[13px] text-[var(--color-fg-muted)] leading-relaxed">
-                        Instagram DMs max out at {INSTAGRAM_DM_CHAR_LIMIT.toLocaleString()} characters. Copy each part in order and paste into the same chat.
+                        This order is split into {handoff.parts.length} messages—paste them in order.
                       </p>
                     )}
                   </div>
@@ -396,7 +381,7 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
                       </span>
                       <span className="leading-relaxed pt-0.5">
                         <span className="font-semibold">Instagram opens</span>
-                        {' — '}to your DM with @{igHandle}
+                        {' — '}DM with @{igHandle}
                         {handoff.partIndex > 0 ? ' ✓' : ''}
                       </span>
                     </li>
@@ -405,8 +390,8 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
                         3
                       </span>
                       <span className="leading-relaxed pt-0.5">
-                        <span className="font-semibold">Paste and Send</span>
-                        {' — '}Cmd/Ctrl+V, or long-press → Paste on phone
+                        <span className="font-semibold">Paste and send</span>
+                        {' — '}long-press → Paste on phone
                       </span>
                     </li>
                   </ol>
@@ -414,14 +399,16 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
                   {handoff.parts.length > 1 && (
                     <p className="text-[13px] font-medium text-[var(--color-brand)]">
                       {handoff.partIndex >= handoff.parts.length
-                        ? `All ${handoff.parts.length} parts copied — paste the last one, then tap Send`
-                        : `Ready: Part ${handoff.partIndex + 1} of ${handoff.parts.length}`}
+                        ? `All ${handoff.parts.length} messages copied — paste the last one, then send`
+                        : `Message ${Math.min(handoff.partIndex + 1, handoff.parts.length)} of ${handoff.parts.length}`}
                     </p>
                   )}
 
-                  <pre className="text-[11px] leading-relaxed whitespace-pre-wrap break-words max-h-48 overflow-y-auto rounded-[var(--radius-input)] bg-[var(--color-surface-sunken)] p-3 text-[var(--color-fg-muted)] select-text">
-                    {handoff.parts[Math.min(handoff.partIndex, handoff.parts.length - 1)]}
-                  </pre>
+                  {(handoff.parts.length > 1 || handoff.partIndex === 0) && (
+                    <pre className="text-[11px] leading-relaxed whitespace-pre-wrap break-words max-h-48 overflow-y-auto rounded-[var(--radius-input)] bg-[var(--color-surface-sunken)] p-3 text-[var(--color-fg-muted)] select-text">
+                      {handoff.parts[Math.min(handoff.partIndex, handoff.parts.length - 1)]}
+                    </pre>
+                  )}
                 </div>
               </div>
             ) : (
@@ -506,8 +493,8 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
             )}
 
             <div
-              className="border-t border-[var(--color-surface-sunken)] px-4 sm:px-5 pt-4 space-y-3 bg-[var(--color-surface-base)]"
-              style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
+              className="border-t border-[var(--color-surface-sunken)] px-4 sm:px-5 pt-3 sm:pt-4 space-y-2 sm:space-y-3 bg-[var(--color-surface-base)]"
+              style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
             >
               {handoff ? (
                 <>
@@ -515,119 +502,111 @@ export default function CartWidget({ igHandle, saucePricingConfigRaw }: Props) {
                     <button
                       type="button"
                       onClick={finishHandoff}
-                      className="w-full bg-[var(--color-brand)] text-white py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[48px]"
+                      className="w-full bg-[var(--color-brand)] text-white py-2.5 sm:py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[44px] sm:min-h-[48px]"
                     >
-                      I pasted and sent
+                      Done
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={handleCopyHandoffPart}
-                      className="w-full bg-[var(--color-brand)] text-white py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[48px]"
+                      className="w-full bg-[var(--color-brand)] text-white py-2.5 sm:py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[44px] sm:min-h-[48px]"
                     >
                       {handoff.parts.length === 1
                         ? 'Copy order & open Instagram'
                         : handoff.partIndex === 0
-                          ? `Copy part 1 of ${handoff.parts.length} & open Instagram`
-                          : `Copy part ${handoff.partIndex + 1} of ${handoff.parts.length}`}
+                          ? `Copy message 1 of ${handoff.parts.length} & open Instagram`
+                          : `Copy message ${handoff.partIndex + 1} of ${handoff.parts.length}`}
                     </button>
                   )}
-                  {handoff.partIndex > 0 && (
+                  <div className="flex items-center justify-center gap-4 min-h-[36px]">
+                    {handoff.partIndex > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleCopyAgain}
+                        className="text-[12px] font-medium text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] transition-colors py-1"
+                      >
+                        Copy again
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={handleCopyAgain}
-                      className="w-full py-2 text-[13px] font-medium text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] transition-colors min-h-[44px]"
+                      onClick={() => {
+                        setHandoff(null);
+                        setRedirecting(false);
+                      }}
+                      className="text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors py-1"
                     >
-                      Copy again
+                      Cancel
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setHandoff(null);
-                      setRedirecting(false);
-                    }}
-                    className="w-full py-2 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors"
-                  >
-                    Cancel handoff
-                  </button>
-                  <p className="text-[11px] text-[var(--color-fg-subtle)] text-center">
-                    In Instagram: paste into the DM, then tap Send.
-                    {handoff.parts.length > 1 ? ' Paste each part in order in the same chat.' : ''}
-                  </p>
+                  </div>
                 </>
               ) : (
                 <>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[14px] text-[var(--color-fg-muted)]">Subtotal</span>
-                    <span className="text-[16px] font-medium text-[var(--color-fg)]">
-                      {formatPrice(subtotalCents)}
-                    </span>
-                  </div>
                   {discountCents > 0 ? (
-                    <div className="flex justify-between items-center text-emerald-600">
-                      <span className="text-[14px]">Sauce Promo Discount</span>
-                      <span className="text-[16px] font-medium">
-                        -{formatPrice(discountCents)}
-                      </span>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[12px] text-[var(--color-fg-muted)]">
+                        <span>Subtotal</span>
+                        <span>{formatPrice(subtotalCents)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[12px] text-emerald-600">
+                        <span>Sauce promo</span>
+                        <span>-{formatPrice(discountCents)}</span>
+                      </div>
                     </div>
                   ) : (
-                    eligibleSpendCents < sauceConfig.free_threshold_cents && sauceConfig.free_threshold_cents > 0 && (
-                      <div className="mt-2 p-3 bg-emerald-50 rounded-[var(--radius-base)] border border-emerald-100 flex items-center justify-between">
-                        <span className="text-[12px] font-medium text-emerald-800">
-                          Add {formatPrice(sauceConfig.free_threshold_cents - eligibleSpendCents)} more to unlock a FREE sauce!
-                        </span>
-                        <div className="w-16 h-1.5 bg-emerald-200 rounded-full overflow-hidden shrink-0 ml-3">
-                          <div
-                            className="h-full bg-emerald-500 rounded-full"
-                            style={{ width: `${Math.min(100, (eligibleSpendCents / sauceConfig.free_threshold_cents) * 100)}%` }}
-                          />
+                    eligibleSpendCents < sauceConfig.free_threshold_cents && sauceConfig.free_threshold_cents > 0 && items.length > 0 && (
+                      <div className="px-2.5 py-2 bg-emerald-50 rounded-[var(--radius-base)] border border-emerald-100 flex items-center gap-2.5">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-medium text-emerald-800 leading-snug">
+                            {formatPrice(sauceConfig.free_threshold_cents - eligibleSpendCents)} more → free sauce
+                          </p>
+                          <div className="mt-1.5 h-1 bg-emerald-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-emerald-500 rounded-full"
+                              style={{ width: `${Math.min(100, (eligibleSpendCents / sauceConfig.free_threshold_cents) * 100)}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
                     )
                   )}
 
-                  <div className="flex justify-between items-center pt-2 mt-2 border-t border-[var(--color-surface-sunken)]">
+                  <div className="flex justify-between items-baseline gap-3">
                     <span className="text-[14px] font-bold text-[var(--color-fg)]">Total</span>
-                    <span className="text-[24px] font-[family-name:var(--font-display)] font-bold text-[var(--color-brand)]">
+                    <span className="text-[22px] sm:text-[24px] font-[family-name:var(--font-display)] font-bold text-[var(--color-brand)] leading-none">
                       {formatPrice(totalCents)}
                     </span>
                   </div>
 
                   {items.length > 0 && (
-                    <p className={`text-[11px] ${charTone}`}>
-                      Instagram message: {orderCharCount.toLocaleString()} / {INSTAGRAM_DM_CHAR_LIMIT.toLocaleString()}
-                      {partCount > 1 ? ` · will send as ${partCount} parts` : ''}
+                    <p className="text-[11px] text-[var(--color-fg-subtle)] leading-snug">
+                      New clients: 1 meal OK · Returning: $60 or 5 meals
                     </p>
                   )}
-
-                  <p className="text-[12px] text-[var(--color-fg-muted)]">
-                    New clients may order a single meal. Returning clients should order at least $60 total or 5 meals.
-                  </p>
 
                   <button
                     type="button"
                     onClick={handleSendOrder}
                     disabled={items.length === 0 || redirecting}
-                    className="w-full bg-[var(--color-brand)] disabled:bg-[var(--color-surface-sunken)] disabled:text-[var(--color-fg-subtle)] text-white py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[48px]"
+                    className="w-full bg-[var(--color-brand)] disabled:bg-[var(--color-surface-sunken)] disabled:text-[var(--color-fg-subtle)] text-white py-2.5 sm:py-3 rounded-[var(--radius-pill)] text-[14px] font-semibold transition-colors min-h-[44px] sm:min-h-[48px]"
                   >
-                    {redirecting
-                      ? 'Preparing…'
-                      : partCount > 1
-                        ? `Prepare Instagram order (${partCount} parts)`
-                        : 'Prepare Instagram order'}
+                    {redirecting ? 'Preparing…' : 'Send on Instagram'}
                   </button>
-                  <button
-                    type="button"
-                    onClick={clearItems}
-                    disabled={items.length === 0}
-                    className="w-full py-2 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors disabled:opacity-50"
-                  >
-                    Clear cart
-                  </button>
-                  <p className="text-[11px] text-[var(--color-fg-subtle)] text-center">
-                    Next you’ll paste the order into the Instagram DM and send it. We can’t paste for you.
-                  </p>
+
+                  <div className="flex items-center justify-between gap-3 min-h-[28px]">
+                    <p className="text-[11px] text-[var(--color-fg-subtle)] leading-snug flex-1">
+                      {partCount > 1 ? `Sends as ${partCount} messages` : ''}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={clearItems}
+                      disabled={items.length === 0}
+                      className="shrink-0 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-brand)] transition-colors disabled:opacity-50 py-1"
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </>
               )}
             </div>

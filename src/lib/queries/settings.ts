@@ -2,7 +2,8 @@ import { buildClient } from '../supabase/build';
 
 export const SETTINGS_DEFAULTS: Record<string, string> = {
   instagram_handle: 'losmealpreps',
-  tagline: 'Premium meal prep, macro-tracked and ready for pickup.',
+  hero_headline: 'Premium Meal Prep, Ready for Pickup',
+  tagline: 'Chef-made · Macro-tracked · Fresh, never frozen',
   contact_email: 'losmealpreps@gmail.com',
   sauce_pricing_config: JSON.stringify({
     single_price_cents: 150,

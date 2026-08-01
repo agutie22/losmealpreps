@@ -3,17 +3,21 @@ import Layout from '@/layouts/Layout.astro';
 import MealsSection from '@/components/react/public/MealsSection';
 import BundlesSection from '@/components/react/public/BundlesSection';
 import { getActiveCustomLineData } from '@/lib/queries/ingredients';
+import { getHeroMeal } from '@/lib/queries/meals';
+import { getSiteSettings } from '@/lib/queries/settings';
 
 interface PromoGroup { label: string; items: string[] }
 
 const PROMO_CAP = 4;
 
-let customLineGroups: PromoGroup[] = [
-  { label: 'Protein',  items: [] },
-  { label: 'Carbs',    items: [] },
-  { label: 'Veggies',  items: [] },
-  { label: 'Sauces',   items: [] },
-];
+const settings = await getSiteSettings();
+const heroMeal = await getHeroMeal();
+const heroImageUrl = heroMeal?.hero_image_url ?? null;
+const heroHeadline = settings.hero_headline;
+const heroTagline = settings.tagline;
+const igHandle = settings.instagram_handle;
+
+let customLineGroups: PromoGroup[] = [];
 
 try {
   const { proteins, carbs, veggies, sideSauces } = await getActiveCustomLineData();
@@ -22,80 +26,139 @@ try {
     { label: 'Carbs',   items: carbs.slice(0,      PROMO_CAP).map(i => i.name) },
     { label: 'Veggies', items: veggies.slice(0,    PROMO_CAP).map(i => i.name) },
     { label: 'Sauces',  items: sideSauces.slice(0, PROMO_CAP).map(i => i.name) },
-  ];
+  ].filter(group => group.items.length > 0);
 } catch {
-  // fall through with empty lists — page still renders
+  // fall through with empty groups — page still renders
 }
+
+const howItWorks = [
+  {
+    step: '01',
+    title: 'Pick Your Plan',
+    body: 'Choose a Signature bundle or build a fully custom meal — your macros, your way.',
+  },
+  {
+    step: '02',
+    title: 'Order on Instagram',
+    body: 'Your order is copied for you — open Instagram, paste it in the DM, and send.',
+  },
+  {
+    step: '03',
+    title: 'Pick Up & Enjoy',
+    body: 'Meals are prepped fresh and ready for pickup. Just heat and enjoy.',
+  },
+];
 ---
 
-<Layout title="Los Meal Preps | Premium Meal Prep">
+<Layout title="Los Meal Preps | Premium Meal Prep" description={heroTagline}>
   <!-- Hero -->
-  <section class="relative bg-[var(--color-surface-sunken)] py-14 md:py-20 lg:py-28 overflow-hidden">
-    <div class="container mx-auto px-4 sm:px-6 relative z-10 text-center max-w-4xl">
-      <h1 class="font-[family-name:var(--font-display)] font-bold text-[40px] sm:text-[48px] md:text-[64px] lg:text-[76px] text-[var(--color-fg)] leading-[1.05] tracking-tight mb-5 md:mb-6">
-        Premium Meal Prep,<br />Ready for Pickup
-      </h1>
-      <p class="text-[17px] sm:text-[20px] md:text-[22px] text-[var(--color-fg-muted)] mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
-        Chef-made · Macro-tracked · Fresh, never frozen
-      </p>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <a
-          href="/#bundles"
-          class="w-full sm:w-auto inline-flex items-center justify-center bg-[var(--color-brand)] text-[var(--color-surface-elevated)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-[var(--color-brand-hover)] transition-colors shadow-md"
-        >
-          View Bundles
-        </a>
-        <a
-          href="/customize"
-          class="w-full sm:w-auto inline-flex items-center justify-center bg-[var(--color-surface-elevated)] text-[var(--color-brand)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-[var(--color-surface-base)] transition-colors border border-[var(--color-surface-sunken)] shadow-sm"
-        >
-          Build Your Own
-        </a>
-        <a
-          href="/#menu"
-          class="w-full sm:w-auto inline-flex items-center justify-center text-[var(--color-fg-muted)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-medium hover:text-[var(--color-brand)] transition-colors"
-        >
-          Explore Menu
-        </a>
+  <section class="relative min-h-[78vh] md:min-h-[85vh] flex items-end overflow-hidden bg-[var(--color-surface-sunken)]">
+    {heroImageUrl ? (
+      <img
+        src={heroImageUrl}
+        alt=""
+        aria-hidden="true"
+        class="absolute inset-0 h-full w-full object-cover animate-hero-image"
+      />
+    ) : null}
+    <div
+      class:list={[
+        'absolute inset-0',
+        heroImageUrl
+          ? 'bg-gradient-to-t from-black/75 via-black/45 to-black/25'
+          : 'bg-[var(--color-surface-sunken)]',
+      ]}
+    ></div>
+
+    <div class="relative z-10 w-full">
+      <div class="container mx-auto px-4 sm:px-6 pb-14 pt-28 md:pb-20 md:pt-36 lg:pb-24 max-w-4xl">
+        <p class:list={[
+          'font-[family-name:var(--font-display)] font-semibold text-[15px] sm:text-[17px] tracking-[0.04em] mb-4 md:mb-5 animate-hero-copy',
+          heroImageUrl ? 'text-[var(--color-fg-inverse)]/85' : 'text-[var(--color-fg-muted)]',
+        ]}>
+          Los Meal Preps
+        </p>
+        <h1 class:list={[
+          'font-[family-name:var(--font-display)] font-bold text-[40px] sm:text-[48px] md:text-[64px] lg:text-[72px] leading-[1.05] tracking-tight mb-5 md:mb-6 animate-hero-copy animate-hero-copy-delay-1',
+          heroImageUrl ? 'text-[var(--color-fg-inverse)]' : 'text-[var(--color-fg)]',
+        ]}>
+          {heroHeadline}
+        </h1>
+        <p class:list={[
+          'text-[17px] sm:text-[19px] md:text-[21px] mb-8 md:mb-10 max-w-xl leading-relaxed animate-hero-copy animate-hero-copy-delay-2',
+          heroImageUrl ? 'text-[var(--color-fg-inverse)]/80' : 'text-[var(--color-fg-muted)]',
+        ]}>
+          {heroTagline}
+        </p>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 animate-hero-copy animate-hero-copy-delay-3">
+          <a
+            href="/#bundles"
+            class:list={[
+              'inline-flex items-center justify-center px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold transition-colors',
+              heroImageUrl
+                ? 'bg-[var(--color-surface-elevated)] text-[var(--color-brand)] hover:bg-[var(--color-surface-base)]'
+                : 'bg-[var(--color-brand)] text-[var(--color-surface-elevated)] hover:bg-[var(--color-brand-hover)] shadow-md',
+            ]}
+          >
+            View Bundles
+          </a>
+          <a
+            href="/customize"
+            class:list={[
+              'inline-flex items-center justify-center px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold transition-colors',
+              heroImageUrl
+                ? 'border border-white/35 text-[var(--color-fg-inverse)] hover:bg-white/10'
+                : 'bg-[var(--color-surface-elevated)] text-[var(--color-brand)] border border-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-base)] shadow-sm',
+            ]}
+          >
+            Build Your Own
+          </a>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- How It Works -->
-  <section id="how-it-works" class="py-14 md:py-16 lg:py-20 bg-[var(--color-surface-base)]">
+  <section id="how-it-works" class="py-16 md:py-20 lg:py-24 bg-[var(--color-surface-base)]">
     <div class="container mx-auto px-4 sm:px-6">
-      <div class="text-center max-w-2xl mx-auto mb-10 md:mb-12">
-        <h2 class="font-[family-name:var(--font-display)] font-bold text-[32px] md:text-[40px] text-[var(--color-fg)] mb-4">How It Works</h2>
-        <p class="text-[18px] text-[var(--color-fg-muted)]">Three simple steps to premium, macro-tracked fuel.</p>
+      <div class="max-w-2xl mb-12 md:mb-14 animate-section-in">
+        <h2 class="font-[family-name:var(--font-display)] font-bold text-[32px] md:text-[40px] text-[var(--color-fg)] mb-3">
+          How It Works
+        </h2>
+        <p class="text-[17px] md:text-[18px] text-[var(--color-fg-muted)] leading-relaxed">
+          Three simple steps to premium, macro-tracked fuel.
+        </p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 max-w-5xl mx-auto">
-        <div class="text-center">
-          <div class="w-16 h-16 mx-auto bg-[var(--color-surface-sunken)] rounded-full flex items-center justify-center mb-6 text-[24px] font-bold text-[var(--color-brand)]">1</div>
-          <h3 class="font-bold text-[20px] text-[var(--color-fg)] mb-3">Pick Your Plan</h3>
-          <p class="text-[var(--color-fg-muted)] leading-relaxed">Choose a Signature bundle or build a fully custom meal — your macros, your way.</p>
-        </div>
-        <div class="text-center">
-          <div class="w-16 h-16 mx-auto bg-[var(--color-surface-sunken)] rounded-full flex items-center justify-center mb-6 text-[24px] font-bold text-[var(--color-brand)]">2</div>
-          <h3 class="font-bold text-[20px] text-[var(--color-fg)] mb-3">Order on Instagram</h3>
-          <p class="text-[var(--color-fg-muted)] leading-relaxed">Your order is copied for you — open Instagram, paste it in the DM, and send.</p>
-        </div>
-        <div class="text-center">
-          <div class="w-16 h-16 mx-auto bg-[var(--color-surface-sunken)] rounded-full flex items-center justify-center mb-6 text-[24px] font-bold text-[var(--color-brand)]">3</div>
-          <h3 class="font-bold text-[20px] text-[var(--color-fg)] mb-3">Pick Up &amp; Enjoy</h3>
-          <p class="text-[var(--color-fg-muted)] leading-relaxed">Your meals are prepped fresh and ready for pickup. Just heat and enjoy — no prep, no guesswork.</p>
-        </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 max-w-5xl">
+        {howItWorks.map((item) => (
+          <div>
+            <p class="font-[family-name:var(--font-display)] font-semibold text-[28px] md:text-[32px] text-[var(--color-accent)] mb-3 leading-none">
+              {item.step}
+            </p>
+            <h3 class="font-semibold text-[18px] md:text-[20px] text-[var(--color-fg)] mb-2">
+              {item.title}
+            </h3>
+            <p class="text-[15px] md:text-[16px] text-[var(--color-fg-muted)] leading-relaxed">
+              {item.body}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 
   <!-- Signature Menu -->
-  <section id="menu" class="py-14 md:py-16 lg:py-20 bg-[var(--color-surface-sunken)]">
+  <section id="menu" class="py-16 md:py-20 lg:py-24 bg-[var(--color-surface-sunken)]">
     <div class="container mx-auto px-4 sm:px-6">
-      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4 md:gap-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-12 gap-4 md:gap-6">
         <div class="max-w-2xl">
           <span class="text-[12px] font-bold uppercase tracking-widest text-[var(--color-accent)] block mb-3">Signature Line</span>
-          <h2 class="font-[family-name:var(--font-display)] font-bold text-[30px] md:text-[40px] text-[var(--color-fg)] mb-3 md:mb-4">Chef's Signature Meals</h2>
-          <p class="text-[16px] md:text-[18px] text-[var(--color-fg-muted)]">Fixed, chef-crafted dishes. Every macro tracked, every portion calibrated.</p>
+          <h2 class="font-[family-name:var(--font-display)] font-bold text-[30px] md:text-[40px] text-[var(--color-fg)] mb-3">
+            Chef's Signature Meals
+          </h2>
+          <p class="text-[16px] md:text-[18px] text-[var(--color-fg-muted)] leading-relaxed">
+            Fixed, chef-crafted dishes. Every macro tracked, every portion calibrated.
+          </p>
         </div>
         <a href="/#bundles" class="shrink-0 inline-flex items-center gap-2 text-[14px] font-medium text-[var(--color-brand)] hover:underline py-1">
           Bundle &amp; save →
@@ -106,52 +169,84 @@ try {
   </section>
 
   <!-- Custom Meal Promo -->
-  <section class="py-14 md:py-16 lg:py-20 bg-[var(--color-accent-soft)]">
+  <section class="py-16 md:py-20 lg:py-24 bg-[var(--color-accent-soft)]">
     <div class="container mx-auto px-4 sm:px-6">
       <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
         <div>
           <span class="text-[12px] font-bold uppercase tracking-widest text-[var(--color-accent)] block mb-4">Custom Line</span>
-          <h2 class="font-[family-name:var(--font-display)] font-bold text-[30px] md:text-[40px] text-[var(--color-fg)] leading-tight mb-5 md:mb-6">
+          <h2 class="font-[family-name:var(--font-display)] font-bold text-[30px] md:text-[40px] text-[var(--color-fg)] leading-tight mb-5">
             Build Exactly What Your Macros Need
           </h2>
-          <p class="text-[16px] md:text-[18px] text-[var(--color-fg-muted)] mb-7 md:mb-8 leading-relaxed">
+          <p class="text-[16px] md:text-[18px] text-[var(--color-fg-muted)] mb-8 leading-relaxed">
             Choose your protein, carb, veggies, and sauce. Live macros update as you build — no surprises, no guesswork.
           </p>
           <a
             href="/customize"
-            class="inline-flex items-center justify-center bg-[var(--color-brand)] text-[var(--color-surface-elevated)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-[var(--color-brand-hover)] transition-colors shadow-md"
+            class="inline-flex items-center justify-center bg-[var(--color-brand)] text-[var(--color-surface-elevated)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-[var(--color-brand-hover)] transition-colors"
           >
             Start Building →
           </a>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          {customLineGroups.map(group => (
-            <div class="bg-[var(--color-surface-elevated)] rounded-[var(--radius-card)] p-4 sm:p-5 shadow-[var(--shadow-card)]">
-              <p class="text-[11px] font-bold uppercase tracking-widest text-[var(--color-accent)] mb-3">{group.label}</p>
-              <ul class="space-y-1.5">
-                {group.items.map(item => (
-                  <li class="text-[13px] text-[var(--color-fg-muted)]">{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+        {customLineGroups.length > 0 && (
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8 border-t border-[var(--color-accent)]/20 pt-8 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-10">
+            {customLineGroups.map(group => (
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-widest text-[var(--color-accent)] mb-3">{group.label}</p>
+                <ul class="space-y-1.5">
+                  {group.items.map(item => (
+                    <li class="text-[14px] text-[var(--color-fg-muted)]">{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   </section>
 
   <!-- Bundles -->
-  <section id="bundles" class="py-14 md:py-16 lg:py-20 bg-[var(--color-surface-base)]">
+  <section id="bundles" class="py-16 md:py-20 lg:py-24 bg-[var(--color-surface-base)]">
     <div class="container mx-auto px-4 sm:px-6">
-      <div class="text-center max-w-2xl mx-auto mb-10 md:mb-12">
+      <div class="max-w-2xl mx-auto text-center mb-10 md:mb-12">
         <span class="text-[12px] font-bold uppercase tracking-widest text-[var(--color-accent)] block mb-3">Signature Bundles</span>
-        <h2 class="font-[family-name:var(--font-display)] font-bold text-[32px] md:text-[40px] text-[var(--color-fg)] mb-4">Choose Your Plan</h2>
-        <p class="text-[18px] text-[var(--color-fg-muted)]">Commit to a weekly pack and save. Mix and match any signature meals.</p>
-        <p class="text-[13px] text-[var(--color-fg-muted)] mt-4">
+        <h2 class="font-[family-name:var(--font-display)] font-bold text-[32px] md:text-[40px] text-[var(--color-fg)] mb-3">
+          Choose Your Plan
+        </h2>
+        <p class="text-[17px] md:text-[18px] text-[var(--color-fg-muted)] leading-relaxed">
+          Commit to a weekly pack and save. Mix and match any signature meals.
+        </p>
+        <p class="text-[13px] text-[var(--color-fg-subtle)] mt-4">
           New clients may order a single meal. Returning clients should order at least $60 total or 5 meals.
         </p>
       </div>
       <BundlesSection client:only="react" />
+    </div>
+  </section>
+
+  <!-- Closing CTA — negative margin cancels Layout footer top gap so inverse bands meet -->
+  <section class="py-16 md:py-20 lg:py-24 -mb-6 md:-mb-12 bg-[var(--color-surface-inverse)] text-[var(--color-fg-inverse)]">
+    <div class="container mx-auto px-4 sm:px-6 max-w-3xl text-center">
+      <h2 class="font-[family-name:var(--font-display)] font-bold text-[30px] md:text-[40px] mb-4 leading-tight">
+        Ready for pickup?
+      </h2>
+      <p class="text-[16px] md:text-[18px] text-[var(--color-fg-subtle)] mb-8 md:mb-10 leading-relaxed max-w-xl mx-auto">
+        Build your order here, then send it on Instagram{igHandle ? ` (@${igHandle})` : ''}. Fresh meals, no payment on-site — just DM and pick up.
+      </p>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+        <a
+          href="/#bundles"
+          class="inline-flex items-center justify-center bg-[var(--color-surface-elevated)] text-[var(--color-brand)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-[var(--color-surface-base)] transition-colors"
+        >
+          View Bundles
+        </a>
+        <a
+          href="/customize"
+          class="inline-flex items-center justify-center border border-white/30 text-[var(--color-fg-inverse)] px-8 py-4 rounded-[var(--radius-pill)] text-[16px] font-semibold hover:bg-white/10 transition-colors"
+        >
+          Build Your Own
+        </a>
+      </div>
     </div>
   </section>
 </Layout>
